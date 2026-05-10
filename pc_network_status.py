@@ -53,18 +53,15 @@ devices = [
 
 # ==========================================
 # POWERSHELL
-# LOOP INFINITO
+# EXECUÇÃO ÚNICA (SEM LOOP)
 # ==========================================
 
 ps_lines = []
 
-ps_lines.append("while ($true)")
-ps_lines.append("{")
-
 for i, (_, ip) in enumerate(devices, start=1):
 
     ps_lines.append(
-        f'    $pc{i} = if (Test-Connection {ip} -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
+        f'$pc{i} = if (Test-Connection {ip} -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
     )
 
 ps_output = "`n".join(
@@ -72,13 +69,10 @@ ps_output = "`n".join(
 )
 
 ps_lines.append("")
-ps_lines.append(
-    f'    "{ps_output}" | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Encoding ASCII'
-)
 
-ps_lines.append("")
-ps_lines.append("    Start-Sleep -Seconds 5")
-ps_lines.append("}")
+ps_lines.append(
+    f'"{ps_output}" | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Encoding ASCII'
+)
 
 ps_script = "\n".join(ps_lines)
 
@@ -92,10 +86,11 @@ with open(ps1_path, "w", encoding="utf-8") as f:
 
 # ==========================================
 # BAT
+# SEM START
 # ==========================================
 
 bat_content = r'''@echo off
-start "" powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
+powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
 '''
 
 bat_path = os.path.join(
@@ -202,10 +197,6 @@ ini_lines.append("BackgroundMargins=0,34,0,14")
 ini_lines.append("Draggable=1")
 ini_lines.append("ClickThrough=0")
 
-ini_lines.append(
-    'OnRefreshAction=[!CommandMeasure RunScript "Run"]'
-)
-
 ini_lines.append("")
 
 # ==========================================
@@ -216,7 +207,7 @@ ini_lines.append("[Metadata]")
 
 ini_lines.append("Name=Network Devices")
 ini_lines.append("Author=Phobos")
-ini_lines.append("Version=FINAL-LOOP")
+ini_lines.append("Version=FINAL-STABLE")
 
 ini_lines.append("")
 
@@ -239,7 +230,7 @@ ini_lines.append("")
 # RUN SCRIPT
 # ==========================================
 
-ini_lines.append("[RunScript]")
+ini_lines.append("[RunScriptTimer]")
 
 ini_lines.append("Measure=Plugin")
 ini_lines.append("Plugin=RunCommand")
@@ -249,6 +240,11 @@ ini_lines.append(
 )
 
 ini_lines.append("RunCommand=1")
+
+# EXECUTA A CADA 5 SEGUNDOS
+ini_lines.append("UpdateDivider=5")
+
+ini_lines.append("DynamicVariables=1")
 
 ini_lines.append("")
 
@@ -427,7 +423,7 @@ print("")
 print("⚠ IMPORTANTE ⚠")
 print("")
 print("1. FECHE COMPLETAMENTE o Rainmeter")
-print("2. Execute o BAT UMA VEZ")
+print("2. Execute este Python")
 print("3. Abra o Rainmeter")
 print("4. Load RedeMonitor.ini")
 print("")
