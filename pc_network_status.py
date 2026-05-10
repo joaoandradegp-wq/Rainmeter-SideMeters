@@ -449,6 +449,12 @@ if os.path.exists(rainmeter_path):
         f'"{rainmeter_path}" !ActivateConfig "illustro\\NetworkDevices" "RedeMonitor.ini"'
     )
 
+    # ESPERA RAINMETER CARREGAR
+    time.sleep(5)
+
+    # EXECUTA O BATCH UMA VEZ
+    os.system(f'"{bat_path}"')
+
 # ==========================================
 # DONE
 # ==========================================
@@ -464,11 +470,4 @@ print(f"LUA : {lua_path}")
 print(f"PS1 : {ps1_path}")
 print(f"BAT : {bat_path}")
 
-print("")
-print("⚠ IMPORTANTE ⚠")
-print("")
-print("Se o skin não aparecer:")
-print("1. Abra Rainmeter")
-print("2. Vá em illustro > NetworkDevices")
-print("3. Load RedeMonitor.ini")
 print("")
