@@ -1,4 +1,15 @@
 import os
+import time
+
+# ==========================================
+# FECHA RAINMETER
+# ==========================================
+
+print("Fechando Rainmeter...")
+
+os.system("taskkill /F /IM Rainmeter.exe >nul 2>&1")
+
+time.sleep(2)
 
 # ==========================================
 # PATHS
@@ -30,6 +41,10 @@ old_files = [
     os.path.join(skin_path, "RedeMonitor.ini"),
 ]
 
+print("")
+print("Removendo arquivos antigos...")
+print("")
+
 for file in old_files:
 
     if os.path.exists(file):
@@ -53,8 +68,12 @@ devices = [
 
 # ==========================================
 # POWERSHELL
-# EXECUÇÃO ÚNICA (SEM LOOP)
+# EXECUÇÃO ÚNICA
 # ==========================================
+
+print("")
+print("Gerando PowerShell...")
+print("")
 
 ps_lines = []
 
@@ -86,8 +105,9 @@ with open(ps1_path, "w", encoding="utf-8") as f:
 
 # ==========================================
 # BAT
-# SEM START
 # ==========================================
+
+print("Gerando BAT...")
 
 bat_content = r'''@echo off
 powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
@@ -104,6 +124,8 @@ with open(bat_path, "w", encoding="utf-8") as f:
 # ==========================================
 # LUA
 # ==========================================
+
+print("Gerando LUA...")
 
 lua_txt_path = (
     base_path + "\\network_status.txt"
@@ -183,6 +205,8 @@ with open(lua_path, "w", encoding="utf-8") as f:
 # INI
 # ==========================================
 
+print("Gerando INI...")
+
 ini_lines = []
 
 ini_lines.append("[Rainmeter]")
@@ -227,7 +251,7 @@ ini_lines.append(
 ini_lines.append("")
 
 # ==========================================
-# RUN SCRIPT
+# RUN SCRIPT TIMER
 # ==========================================
 
 ini_lines.append("[RunScriptTimer]")
@@ -405,6 +429,27 @@ with open(
     f.write("\n".join(ini_lines))
 
 # ==========================================
+# ABRE RAINMETER
+# ==========================================
+
+print("")
+print("Abrindo Rainmeter...")
+print("")
+
+rainmeter_path = r"C:\Program Files\Rainmeter\Rainmeter.exe"
+
+if os.path.exists(rainmeter_path):
+
+    os.startfile(rainmeter_path)
+
+    time.sleep(3)
+
+    # LOAD AUTOMÁTICO DO SKIN
+    os.system(
+        f'"{rainmeter_path}" !ActivateConfig "illustro\\NetworkDevices" "RedeMonitor.ini"'
+    )
+
+# ==========================================
 # DONE
 # ==========================================
 
@@ -422,8 +467,8 @@ print(f"BAT : {bat_path}")
 print("")
 print("⚠ IMPORTANTE ⚠")
 print("")
-print("1. FECHE COMPLETAMENTE o Rainmeter")
-print("2. Execute este Python")
-print("3. Abra o Rainmeter")
-print("4. Load RedeMonitor.ini")
+print("Se o skin não aparecer:")
+print("1. Abra Rainmeter")
+print("2. Vá em illustro > NetworkDevices")
+print("3. Load RedeMonitor.ini")
 print("")
