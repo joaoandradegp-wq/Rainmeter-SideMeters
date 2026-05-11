@@ -36,6 +36,7 @@ os.makedirs(skin_path, exist_ok=True)
 old_files = [
     os.path.join(scripts_path, "check_network.ps1"),
     os.path.join(scripts_path, "check_network.bat"),
+    os.path.join(scripts_path, "start_hidden.vbs"),
     os.path.join(scripts_path, "network.lua"),
     os.path.join(base_path, "network_status.txt"),
     os.path.join(skin_path, "RedeMonitor.ini"),
@@ -63,12 +64,12 @@ for file in old_files:
 devices = [
     ("VIVIANE", "192.168.100.190"),
     ("JULIA", "192.168.100.4"),
-    ("SERVER", "192.168.100.34"),
+    ("SERVER", "100.101.99.16"),
 ]
 
 # ==========================================
 # POWERSHELL
-# EXECUÇÃO ÚNICA
+# LOOP INFINITO
 # ==========================================
 
 print("")
@@ -77,10 +78,13 @@ print("")
 
 ps_lines = []
 
+ps_lines.append("while ($true)")
+ps_lines.append("{")
+
 for i, (_, ip) in enumerate(devices, start=1):
 
     ps_lines.append(
-        f'$pc{i} = if (Test-Connection {ip} -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
+        f'    $pc{i} = if (Test-Connection {ip} -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
     )
 
 ps_output = "`n".join(
@@ -90,8 +94,12 @@ ps_output = "`n".join(
 ps_lines.append("")
 
 ps_lines.append(
-    f'"{ps_output}" | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Encoding ASCII'
+    f'    "{ps_output}" | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Encoding ASCII'
 )
+
+ps_lines.append("")
+ps_lines.append("    Start-Sleep -Seconds 5")
+ps_lines.append("}")
 
 ps_script = "\n".join(ps_lines)
 
@@ -100,7 +108,7 @@ ps1_path = os.path.join(
     "check_network.ps1"
 )
 
-with open(ps1_path, "w", encoding="utf-8") as f:
+with open(ps1_path, "w", encoding="utf-8-sig", newline="\r\n") as f:
     f.write(ps_script)
 
 # ==========================================
@@ -110,6 +118,13 @@ with open(ps1_path, "w", encoding="utf-8") as f:
 print("Gerando BAT...")
 
 bat_content = r'''@echo off
+
+for /f "tokens=2 delims=," %%a in ('
+    tasklist /v /fo csv ^| findstr /i "check_network.ps1"
+') do (
+    taskkill /F /PID %%~a >nul 2>&1
+)
+
 powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
 '''
 
@@ -120,6 +135,25 @@ bat_path = os.path.join(
 
 with open(bat_path, "w", encoding="utf-8") as f:
     f.write(bat_content)
+
+# ==========================================
+# VBS
+# ==========================================
+
+print("Gerando VBS...")
+
+vbs_content = r'''Set WshShell = CreateObject("WScript.Shell")
+WshShell.Run chr(34) & "C:\Users\Phobos\Documents\Rainmeter\Scripts\check_network.bat" & Chr(34), 0
+Set WshShell = Nothing
+'''
+
+vbs_path = os.path.join(
+    scripts_path,
+    "start_hidden.vbs"
+)
+
+with open(vbs_path, "w", encoding="utf-8") as f:
+    f.write(vbs_content)
 
 # ==========================================
 # LUA
@@ -221,6 +255,10 @@ ini_lines.append("BackgroundMargins=0,34,0,14")
 ini_lines.append("Draggable=1")
 ini_lines.append("ClickThrough=0")
 
+ini_lines.append(
+    f'OnRefreshAction=["{vbs_path}"]'
+)
+
 ini_lines.append("")
 
 # ==========================================
@@ -231,7 +269,7 @@ ini_lines.append("[Metadata]")
 
 ini_lines.append("Name=Network Devices")
 ini_lines.append("Author=Phobos")
-ini_lines.append("Version=FINAL-STABLE")
+ini_lines.append("Version=FINAL-PERSISTENT")
 
 ini_lines.append("")
 
@@ -247,28 +285,6 @@ ini_lines.append("textSize=8")
 ini_lines.append(
     "colorText=255,255,255,205"
 )
-
-ini_lines.append("")
-
-# ==========================================
-# RUN SCRIPT TIMER
-# ==========================================
-
-ini_lines.append("[RunScriptTimer]")
-
-ini_lines.append("Measure=Plugin")
-ini_lines.append("Plugin=RunCommand")
-
-ini_lines.append(
-    f'Program="{bat_path}"'
-)
-
-ini_lines.append("RunCommand=1")
-
-# EXECUTA A CADA 5 SEGUNDOS
-ini_lines.append("UpdateDivider=5")
-
-ini_lines.append("DynamicVariables=1")
 
 ini_lines.append("")
 
@@ -444,16 +460,9 @@ if os.path.exists(rainmeter_path):
 
     time.sleep(3)
 
-    # LOAD AUTOMÁTICO DO SKIN
     os.system(
         f'"{rainmeter_path}" !ActivateConfig "illustro\\NetworkDevices" "RedeMonitor.ini"'
     )
-
-    # ESPERA RAINMETER CARREGAR
-    time.sleep(5)
-
-    # EXECUTA O BATCH UMA VEZ
-    os.system(f'"{bat_path}"')
 
 # ==========================================
 # DONE
@@ -469,5 +478,11 @@ print(f"INI : {ini_path}")
 print(f"LUA : {lua_path}")
 print(f"PS1 : {ps1_path}")
 print(f"BAT : {bat_path}")
+print(f"VBS : {vbs_path}")
 
 print("")
+print("⚠ IMPORTANTE ⚠")
+print("")
+print("O monitor agora roda continuamente em background.")
+print("O Rainmeter inicia automaticamente o monitor.")
+print("")```
