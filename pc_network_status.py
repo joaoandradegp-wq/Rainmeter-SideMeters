@@ -143,7 +143,11 @@ with open(bat_path, "w", encoding="utf-8") as f:
 print("Gerando VBS...")
 
 vbs_content = r'''Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run chr(34) & "C:\Users\Phobos\Documents\Rainmeter\Scripts\check_network.bat" & Chr(34), 0
+
+batPath = WshShell.ExpandEnvironmentStrings("%USERPROFILE%") & "\Documents\Rainmeter\Scripts\check_network.bat"
+
+WshShell.Run chr(34) & batPath & chr(34), 0
+
 Set WshShell = Nothing
 '''
 
@@ -485,4 +489,4 @@ print("⚠ IMPORTANTE ⚠")
 print("")
 print("O monitor agora roda continuamente em background.")
 print("O Rainmeter inicia automaticamente o monitor.")
-print("")```
+print("")
