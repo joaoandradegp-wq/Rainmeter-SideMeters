@@ -68,6 +68,7 @@ devices = [
     ("NOTEBOOK", "100.119.10.67"),
     ("LOJA", "100.82.188.19"),
     ("PHOBOS", "100.73.156.100"),
+    ("MARLY BRUM", "marly.ddns.net"),
     
 ]
 
