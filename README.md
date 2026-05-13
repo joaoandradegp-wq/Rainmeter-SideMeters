@@ -4,6 +4,12 @@
 Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em monitoramento, produtividade, integração de rede e utilidades para desktop.
 </p>
 
+<p align="center">🌐
+  <a href="https://www.rainmeter.net/" target="_blank">
+     Site Oficial do Rainmeter
+  </a>
+</p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
