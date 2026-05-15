@@ -65,6 +65,71 @@ Cada equipamento é exibido diretamente no desktop através do Rainmeter, indica
   <li>Monitoramento persistente em background</li>
 </ul>
 
+<h2>🔧 Configuração dos dispositivos</h2>
+
+<p>
+Os dispositivos monitorados não ficam diretamente no código Python.
+</p>
+
+<p>
+O sistema utiliza um arquivo externo chamado <b>devices.ini</b>, permitindo configurar os equipamentos sem alterar o script principal.
+</p>
+
+<p>
+Isso facilita:
+</p>
+
+<ul>
+  <li>Distribuição pública no GitHub sem expor IPs pessoais</li>
+  <li>Personalização rápida dos dispositivos monitorados</li>
+  <li>Facilidade de manutenção</li>
+  <li>Maior organização do projeto</li>
+</ul>
+
+<p>
+O arquivo deve ser criado em:
+</p>
+
+<pre>
+Documents\Rainmeter\Scripts\devices.ini
+</pre>
+
+<p>
+Exemplo de configuração:
+</p>
+
+<pre>
+[PC CASA]
+ip=192.168.0.10
+
+[NOTEBOOK]
+ip=192.168.0.20
+
+[SERVIDOR]
+ip=10.0.0.5
+
+[CAMERA]
+ip=192.168.0.50
+
+[DDNS REMOTO]
+ip=meuservidor.ddns.net
+</pre>
+
+<p>
+Cada seção representa um dispositivo exibido no widget.
+</p>
+
+<p>
+O sistema possui suporte tanto para:
+</p>
+
+<ul>
+  <li>IPs locais</li>
+  <li>IPs externos</li>
+  <li>DDNS</li>
+  <li>Hosts personalizados</li>
+</ul>
+
 <h2>⚙️ Funcionamento automático</h2>
 
 <p>
@@ -170,6 +235,32 @@ A interface exibe:
   <li>Windows Desktop APIs</li>
 </ul>
 
+<h2>📁 Arquivos ignorados no GitHub</h2>
+
+<p>
+Por questões de privacidade e segurança, o arquivo <b>devices.ini</b> não deve ser enviado ao GitHub.
+</p>
+
+<p>
+O repositório utiliza um arquivo de exemplo para configuração inicial:
+</p>
+
+<pre>
+devices.example.ini
+</pre>
+
+<p>
+Basta renomear o arquivo para:
+</p>
+
+<pre>
+devices.ini
+</pre>
+
+<p>
+Após isso, configure seus dispositivos normalmente.
+</p>
+
 <h2>🚀 Estrutura modular</h2>
 
 <p>
@@ -191,6 +282,37 @@ A arquitetura permite adicionar facilmente novos módulos futuramente, mantendo:
 <p>
 O objetivo é transformar a suíte em um conjunto completo de ferramentas desktop personalizadas para monitoramento, produtividade e automação.
 </p>
+
+---
+
+<h2>📦 Estrutura dos arquivos</h2>
+
+<pre>
+Rainmeter/
+│
+├── Scripts/
+│   ├── check_network.ps1
+│   ├── check_network.bat
+│   ├── start_hidden.vbs
+│   ├── network.lua
+│   ├── devices.ini
+│   └── network_status.txt
+│
+└── Skins/
+    └── illustro/
+        └── NetworkDevices/
+            └── RedeMonitor.ini
+</pre>
+
+<h2>🚀 Como utilizar</h2>
+
+<ol>
+  <li>Instale o Rainmeter</li>
+  <li>Execute o script Python</li>
+  <li>Edite o arquivo <b>devices.ini</b></li>
+  <li>Reexecute o script para atualizar os dispositivos</li>
+  <li>O widget será carregado automaticamente no desktop</li>
+</ol>
 
 ---
 
