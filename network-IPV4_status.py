@@ -61,16 +61,48 @@ for file in old_files:
 # DEVICES
 # ==========================================
 
-devices = [
-    ("VIVIANE", "192.168.100.190"),
-    ("JULIA", "192.168.100.4"),
-    ("SERVER", "100.101.99.16"),
-    ("NOTEBOOK", "192.168.100.110"),
-    ("LOJA", "100.82.188.19"),
-    ("PHOBOS", "100.73.156.100"),
-    ("MARLY BRUM", "marly.ddns.net"),
-    
-]
+import configparser
+
+devices_ini = os.path.join(
+    scripts_path,
+    "devices.ini"
+)
+
+# Cria arquivo exemplo caso não exista
+if not os.path.exists(devices_ini):
+
+    config = configparser.ConfigParser()
+
+    config["PC1"] = {
+        "ip": "192.168.0.10"
+    }
+
+    config["PC2"] = {
+        "ip": "192.168.0.20"
+    }
+
+    with open(devices_ini, "w") as f:
+        config.write(f)
+
+    print("")
+    print("devices.ini criado!")
+    print("Edite o arquivo e execute novamente.")
+    print("")
+
+    exit()
+
+# Lê INI
+config = configparser.ConfigParser()
+config.read(devices_ini)
+
+devices = []
+
+for section in config.sections():
+
+    name = section
+    ip = config[section]["ip"]
+
+    devices.append((name, ip))
 
 # ==========================================
 # POWERSHELL
