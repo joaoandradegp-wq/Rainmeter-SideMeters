@@ -1,4 +1,4 @@
-<h1 align="center">☁️ Phobos Rainmeter Suite</h1>
+<h1 align="center">☁️ Side Meters Suite</h1>
 
 <p align="center">
 Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em monitoramento, produtividade, integração de rede e utilidades para desktop.
@@ -21,7 +21,7 @@ Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em m
 <h2>📌 Sobre</h2>
 
 <p>
-O <b>Phobos Rainmeter Suite</b> é um conjunto de widgets personalizados criados para expandir as capacidades do Rainmeter através de automações externas, monitoramento contínuo e integração com scripts auxiliares.
+O <b>Side Meters Suite</b> é/será um conjunto de widgets personalizados criados para expandir as capacidades do Rainmeter através de automações externas, monitoramento contínuo e integração com scripts auxiliares.
 </p>
 
 <p>
