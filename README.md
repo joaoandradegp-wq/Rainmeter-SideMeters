@@ -21,71 +21,95 @@ Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em m
 <h2>📌 Sobre</h2>
 
 <p>
-O <b>Side Meters Suite</b> será um conjunto de widgets personalizados criados para expandir as capacidades do Rainmeter através de automações externas, monitoramento contínuo e integração com scripts auxiliares.
+O <b>Side Meters Suite</b> é uma suíte de widgets e automações criada para expandir as funcionalidades do Rainmeter através de monitoramento contínuo, integração com scripts externos e módulos independentes.
 </p>
 
 <p>
-A ideia do projeto é centralizar diversos módulos independentes em uma única suíte visual e funcional para desktop Windows.
+Cada componente possui backend próprio e integração automática com o Rainmeter, permitindo adicionar funcionalidades avançadas além dos widgets tradicionais.
 </p>
 
-<p>
-Cada widget possui sua própria automação, lógica de atualização e integração com o Rainmeter, permitindo adicionar funcionalidades avançadas além dos medidores tradicionais da plataforma.
-</p>
-
-<h2>🧩 Widgets</h2>
+<h2>🧩 Módulos atuais</h2>
 
 <ul>
-  <li>🌐 RedeMonitor (monitoramento de dispositivos)</li>
-  <li>📊 Widgets futuros em desenvolvimento</li>
+  <li>🌐 RedeMonitor</li>
+  <li>📊 Widgets futuros</li>
   <li>⚙️ Integrações automatizadas</li>
   <li>🔄 Monitores persistentes</li>
 </ul>
 
+---
+
 <h2>🌐 RedeMonitor</h2>
 
 <p>
-O primeiro módulo da suíte é o <b>RedeMonitor</b>, responsável por monitorar dispositivos da rede local e conexões externas em tempo real.
+O primeiro módulo da suíte é o <b>RedeMonitor</b>, responsável pelo monitoramento contínuo de dispositivos locais e remotos diretamente no desktop via Rainmeter.
 </p>
 
 <p>
-O widget verifica continuamente o status de dispositivos previamente cadastrados utilizando testes automáticos de conectividade.
-</p>
-
-<p>
-Cada equipamento é exibido diretamente no desktop através do Rainmeter, indicando:
+O sistema verifica automaticamente a conectividade dos equipamentos e atualiza o widget em tempo real.
 </p>
 
 <ul>
-  <li>Status ONLINE</li>
-  <li>Status OFFLINE</li>
+  <li>Status ONLINE / OFFLINE</li>
   <li>Atualização automática</li>
-  <li>Indicadores visuais por cor</li>
-  <li>Monitoramento persistente em background</li>
+  <li>Indicadores visuais</li>
+  <li>Monitor persistente</li>
+  <li>Integração automática com Rainmeter</li>
 </ul>
 
-<h2>🔧 Configuração dos dispositivos</h2>
+---
+
+<h2>🖥️ Interface visual</h2>
 
 <p>
-Os dispositivos monitorados não ficam diretamente no código Python.
+A partir da versão atual o projeto passou a utilizar uma interface dedicada chamada <b>RedeMonitorUI</b>.
 </p>
 
 <p>
-O sistema utiliza um arquivo externo chamado <b>devices.ini</b>, permitindo configurar os equipamentos sem alterar o script principal.
+Agora não é mais necessário editar arquivos manualmente.
 </p>
 
 <p>
-Isso facilita:
+A interface permite:
 </p>
 
 <ul>
-  <li>Distribuição pública no GitHub sem expor IPs pessoais</li>
-  <li>Personalização rápida dos dispositivos monitorados</li>
-  <li>Facilidade de manutenção</li>
-  <li>Maior organização do projeto</li>
+  <li>Adicionar dispositivos</li>
+  <li>Editar dispositivos</li>
+  <li>Remover dispositivos</li>
+  <li>Salvar configurações</li>
+  <li>Atualizar automaticamente o Rainmeter</li>
 </ul>
 
+---
+
+<h2>🧩 Arquitetura</h2>
+
+<pre>
+RedeMonitorUI.exe
+        ↓
+    devices.ini
+        ↓
+ RedeMonitor.exe
+        ↓
+    Rainmeter
+</pre>
+
 <p>
-O arquivo deve ser criado em:
+O sistema foi dividido entre:
+</p>
+
+<ul>
+  <li><b>RedeMonitorUI:</b> interface de gerenciamento</li>
+  <li><b>RedeMonitor:</b> backend responsável pela geração automática dos arquivos</li>
+</ul>
+
+---
+
+<h2>🔧 Configuração</h2>
+
+<p>
+Os dispositivos monitorados ficam armazenados automaticamente em:
 </p>
 
 <pre>
@@ -93,227 +117,162 @@ Documents\Rainmeter\Scripts\devices.ini
 </pre>
 
 <p>
-Exemplo de configuração:
+Exemplo:
 </p>
 
 <pre>
-[PC CASA]
+[Notebook]
 ip=192.168.0.10
 
-[NOTEBOOK]
-ip=192.168.0.20
-
-[SERVIDOR]
+[Servidor]
 ip=10.0.0.5
 
-[CAMERA]
+[Câmera]
 ip=192.168.0.50
 
-[DDNS REMOTO]
+[DDNS]
 ip=meuservidor.ddns.net
 </pre>
 
 <p>
-Cada seção representa um dispositivo exibido no widget.
-</p>
-
-<p>
-O sistema possui suporte tanto para:
+Suporte para:
 </p>
 
 <ul>
-  <li>IPs locais</li>
-  <li>IPs externos</li>
+  <li>IP local</li>
+  <li>IP externo</li>
+  <li>Hostname</li>
   <li>DDNS</li>
-  <li>Hosts personalizados</li>
 </ul>
+
+---
 
 <h2>⚙️ Funcionamento automático</h2>
 
 <p>
-O sistema gera automaticamente toda a estrutura necessária para funcionamento do widget.
-</p>
-
-<p>
-Durante a execução, o instalador/configurador:
+O backend gera automaticamente toda a estrutura necessária do Rainmeter:
 </p>
 
 <ul>
-  <li>Fecha o Rainmeter automaticamente</li>
-  <li>Remove arquivos antigos</li>
-  <li>Cria diretórios necessários</li>
-  <li>Gera scripts PowerShell</li>
-  <li>Cria automações BAT e VBS</li>
-  <li>Gera integração LUA</li>
-  <li>Cria o arquivo INI do Rainmeter</li>
-  <li>Reabre o Rainmeter automaticamente</li>
-  <li>Ativa o widget já configurado</li>
+  <li>PowerShell persistente</li>
+  <li>Integração LUA</li>
+  <li>Execução oculta via VBS</li>
+  <li>Controle via BAT</li>
+  <li>Skin dinâmica</li>
 </ul>
 
 <p>
-Todo o processo é realizado automaticamente via Python.
+Durante a atualização o sistema:
 </p>
+
+<ul>
+  <li>Fecha Rainmeter</li>
+  <li>Remove arquivos antigos</li>
+  <li>Reconstrói a skin</li>
+  <li>Reabre o Rainmeter</li>
+  <li>Ativa automaticamente o widget</li>
+</ul>
+
+---
 
 <h2>🔄 Monitoramento persistente</h2>
 
 <p>
-O monitor opera continuamente em background utilizando PowerShell em loop persistente.
+O monitor utiliza PowerShell em execução contínua.
 </p>
 
 <p>
-A cada ciclo de atualização:
+A cada ciclo:
 </p>
 
 <ul>
-  <li>Os dispositivos são testados automaticamente</li>
-  <li>Os resultados são gravados em arquivo temporário</li>
-  <li>O script LUA lê os dados atualizados</li>
-  <li>O Rainmeter atualiza os medidores em tempo real</li>
+  <li>Os dispositivos são testados</li>
+  <li>O status é salvo</li>
+  <li>O LUA lê os dados</li>
+  <li>O Rainmeter atualiza a interface</li>
 </ul>
 
 <p>
-Isso permite monitoramento constante sem necessidade de interação manual.
+Atualização padrão:
 </p>
 
-<h2>🧠 Integração entre tecnologias</h2>
+<pre>
+5 segundos
+</pre>
+
+---
+
+<h2>🎨 Interface do widget</h2>
 
 <p>
-O projeto combina múltiplas tecnologias trabalhando juntas:
+O layout é integrado ao tema Illustro do Rainmeter.
+</p>
+
+<p>
+Exibe:
 </p>
 
 <ul>
-  <li><b>Python:</b> geração automática dos arquivos e gerenciamento</li>
-  <li><b>PowerShell:</b> monitoramento dos dispositivos</li>
-  <li><b>LUA:</b> comunicação com o Rainmeter</li>
-  <li><b>VBS:</b> execução oculta dos processos</li>
-  <li><b>BAT:</b> controle de inicialização e reinício</li>
-  <li><b>Rainmeter:</b> interface visual desktop</li>
-</ul>
-
-<h2>🎨 Interface visual</h2>
-
-<p>
-O widget utiliza layout minimalista integrado ao tema Illustro do Rainmeter.
-</p>
-
-<p>
-A interface exibe:
-</p>
-
-<ul>
-  <li>Lista de dispositivos monitorados</li>
+  <li>Dispositivos monitorados</li>
   <li>Status em tempo real</li>
-  <li>Cores dinâmicas de disponibilidade</li>
-  <li>Atualização automática sem refresh manual</li>
-  <li>Integração visual transparente com desktop</li>
+  <li>Cores dinâmicas</li>
+  <li>Atualização automática</li>
 </ul>
 
-<h2>📡 Recursos do RedeMonitor</h2>
+---
+
+<h2>🛠 Tecnologias</h2>
 
 <ul>
-  <li>Monitoramento contínuo de rede</li>
-  <li>Suporte a IP local</li>
-  <li>Suporte a DDNS</li>
-  <li>Execução invisível em background</li>
-  <li>Atualização automática a cada 5 segundos</li>
-  <li>Inicialização automática junto ao Rainmeter</li>
-  <li>Reconstrução automática dos arquivos da skin</li>
-  <li>Gerenciamento automático de processos</li>
-</ul>
-
-<h2>🛠️ Tecnologias utilizadas</h2>
-
-<ul>
-  <li>Python 3</li>
+  <li>Python</li>
   <li>Rainmeter</li>
   <li>PowerShell</li>
   <li>LUA</li>
   <li>VBScript</li>
   <li>Batch Script</li>
-  <li>Windows Desktop APIs</li>
+  <li>Tkinter</li>
 </ul>
-
-<h2>📁 Arquivos ignorados no GitHub</h2>
-
-<p>
-Por questões de privacidade e segurança, o arquivo <b>devices.ini</b> não deve ser enviado ao GitHub.
-</p>
-
-<p>
-O repositório utiliza um arquivo de exemplo para configuração inicial:
-</p>
-
-<pre>
-devices.example.ini
-</pre>
-
-<p>
-Basta renomear o arquivo para:
-</p>
-
-<pre>
-devices.ini
-</pre>
-
-<p>
-Após isso, configure seus dispositivos normalmente.
-</p>
-
-<h2>🚀 Estrutura modular</h2>
-
-<p>
-O <b>Phobos Rainmeter Suite</b> foi projetado para crescer com múltiplos widgets independentes.
-</p>
-
-<p>
-A arquitetura permite adicionar facilmente novos módulos futuramente, mantendo:
-</p>
-
-<ul>
-  <li>Automação independente</li>
-  <li>Widgets separados</li>
-  <li>Atualizações isoladas</li>
-  <li>Integração centralizada</li>
-  <li>Padronização visual</li>
-</ul>
-
-<p>
-O objetivo é transformar a suíte em um conjunto completo de ferramentas desktop personalizadas para monitoramento, produtividade e automação.
-</p>
 
 ---
 
-<h2>📦 Estrutura dos arquivos</h2>
+<h2>📦 Estrutura</h2>
 
 <pre>
-Rainmeter/
+SideMetersSuite/
 │
-├── Scripts/
-│   ├── check_network.ps1
-│   ├── check_network.bat
-│   ├── start_hidden.vbs
-│   ├── network.lua
-│   ├── devices.ini
-│   └── network_status.txt
+├── RedeMonitorUI.exe
+├── RedeMonitor.exe
 │
-└── Skins/
-    └── illustro/
-        └── NetworkDevices/
-            └── RedeMonitor.ini
+└── Rainmeter/
+    │
+    ├── Scripts/
+    │   ├── devices.ini
+    │   ├── check_network.ps1
+    │   ├── check_network.bat
+    │   ├── start_hidden.vbs
+    │   ├── network.lua
+    │   └── network_status.txt
+    │
+    └── Skins/
+        └── illustro/
+            └── NetworkDevices/
+                └── RedeMonitor.ini
 </pre>
+
+---
 
 <h2>🚀 Como utilizar</h2>
 
 <ol>
   <li>Instale o Rainmeter</li>
-  <li>Execute o script Python</li>
-  <li>Edite o arquivo <b>devices.ini</b></li>
-  <li>Reexecute o script para atualizar os dispositivos</li>
-  <li>O widget será carregado automaticamente no desktop</li>
+  <li>Execute <b>RedeMonitorUI.exe</b></li>
+  <li>Cadastre os dispositivos</li>
+  <li>Clique em <b>Atualizar</b></li>
+  <li>O Rainmeter será configurado automaticamente</li>
 </ol>
 
 ---
 
 <p align="center">
-Suíte de widgets Rainmeter desenvolvida para automação, monitoramento e integração desktop.
+Suite de widgets para Rainmeter focada em monitoramento, automação e integração desktop.
 </p>
