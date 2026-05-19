@@ -540,9 +540,11 @@ def salvar_ini():
         cfg.write(f)
 
     messagebox.showinfo(
-        "OK",
-        "Configuração salva."
+        "Aviso",
+        "O Rainmeter irá reiniciar para que sua configuração tenha efeito."
     )
+    
+    root.destroy()
 
 # ==========================================
 # EXEC
