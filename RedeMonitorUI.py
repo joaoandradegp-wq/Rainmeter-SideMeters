@@ -23,7 +23,7 @@ EXE_NAME = "RedeMonitor.exe"
 
 root = tk.Tk()
 
-root.title("RedeMonitor - Side Meters Suite 1.0")
+root.title("RedeMonitor - Side Meters Suite 1.1")
 
 root.geometry("750x500")
 
