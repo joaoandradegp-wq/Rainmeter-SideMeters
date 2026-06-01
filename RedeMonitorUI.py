@@ -22,8 +22,8 @@ EXE_NAME = "RedeMonitor.exe"
 root = tk.Tk()
 
 root.title("RedeMonitor - Side Meters Suite 1.1")
-root.geometry("750x500")
-root.minsize(650, 450)
+root.geometry("510x450")
+root.minsize(510, 450)
 
 # ==========================================
 # HEADER
@@ -56,8 +56,8 @@ tree = ttk.Treeview(frame_table, columns=columns, show="headings")
 tree.heading("nome", text="Dispositivo")
 tree.heading("ip", text="IP / Host / DDNS")
 
-tree.column("nome", width=250)
-tree.column("ip", width=350)
+tree.column("nome", width=220)
+tree.column("ip", width=250)
 
 scroll = ttk.Scrollbar(frame_table, orient="vertical", command=tree.yview)
 
