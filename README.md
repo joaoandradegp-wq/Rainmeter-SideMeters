@@ -32,9 +32,6 @@ Cada componente possui backend próprio e integração automática com o Rainmet
 
 <ul>
   <li>🌐 RedeMonitor</li>
-  <li>📊 Widgets futuros</li>
-  <li>⚙️ Integrações automatizadas</li>
-  <li>🔄 Monitores persistentes</li>
 </ul>
 
 ---
