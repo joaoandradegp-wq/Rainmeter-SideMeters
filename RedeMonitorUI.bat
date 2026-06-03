@@ -1,1 +1,0 @@
-pyinstaller --onefile --noconsole --icon=RedeMonitorUI.ico RedeMonitorUI.py
