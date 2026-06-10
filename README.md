@@ -270,6 +270,14 @@ SideMetersSuite/
 
 ---
 
+## 📸 Preview
+
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/user-attachments/assets/91cedbb1-e616-4415-a307-29be5627173e" />
+</p>
+
+---
+
 <p align="center">
 Suite de widgets para Rainmeter focada em monitoramento, automação e integração desktop.
 </p>
