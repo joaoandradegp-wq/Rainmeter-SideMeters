@@ -273,7 +273,7 @@ SideMetersSuite/
 ## 📸 Preview
 
 <p align="center">
-  <img width="500" alt="image" src="https://github.com/user-attachments/assets/3d83c3a5-eb35-4886-bb24-43ad6ed19d80" />
+  <img width="400" alt="image" src="https://github.com/user-attachments/assets/3d83c3a5-eb35-4886-bb24-43ad6ed19d80" />
 </p>
 
 ---
