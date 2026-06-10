@@ -4,12 +4,6 @@
 Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em monitoramento e utilidades para desktop.
 </p>
 
-<p align="center">🌐
-  <a href="https://www.rainmeter.net/" target="_blank">
-     Site Oficial do Rainmeter
-  </a>
-</p>
-
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
@@ -33,6 +27,18 @@ Cada componente possui backend próprio e integração automática com o Rainmet
 <ul>
   <li>🌐 RedeMonitor</li>
 </ul>
+
+---
+
+<h2>🚀 Como utilizar</h2>
+
+<ol>
+  <li>Instale o Rainmeter pelo site oficial <a href="https://www.rainmeter.net/" target="_blank">clicando aqui</a></li> 
+  <li>Execute <b>RedeMonitorUI.exe</b></li>
+  <li>Cadastre os dispositivos</li>
+  <li>Clique em <b>Atualizar</b></li>
+  <li>O Rainmeter será configurado automaticamente</li>
+</ol>
 
 ---
 
@@ -255,18 +261,6 @@ SideMetersSuite/
             └── NetworkDevices/
                 └── RedeMonitor.ini
 </pre>
-
----
-
-<h2>🚀 Como utilizar</h2>
-
-<ol>
-  <li>Instale o Rainmeter</li>
-  <li>Execute <b>RedeMonitorUI.exe</b></li>
-  <li>Cadastre os dispositivos</li>
-  <li>Clique em <b>Atualizar</b></li>
-  <li>O Rainmeter será configurado automaticamente</li>
-</ol>
 
 ---
 
