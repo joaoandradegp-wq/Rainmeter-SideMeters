@@ -274,5 +274,5 @@ SideMetersSuite/
 ---
 
 <p align="center">
-Suite de widgets para Rainmeter focada em monitoramento, automação e integração desktop.
+Suite de widgets para Rainmeter focada em monitoramento, automação e integração desktop. ⚙️
 </p>
