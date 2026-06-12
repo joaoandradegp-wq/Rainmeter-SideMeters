@@ -8,6 +8,7 @@ Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em m
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
   <img src="https://img.shields.io/badge/Integração-Rainmeter-lightgrey">
+  <img src="https://img.shields.io/badge/Language-PT--BR%20-orange">
 </p>
 
 ---
