@@ -1,24 +1,28 @@
 # LinkSpeed.ps1
-# Obtém a velocidade do link do adaptador de rede ativo
-# e grava em linkspeed.txt para o Rainmeter.
+# Obtém a velocidade da interface Ethernet física.
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$outputFile = Join-Path $scriptPath "linkspeed.txt"
 
 try {
-    $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $outputFile = Join-Path $scriptPath "linkspeed.txt"
 
-    # Procura adaptadores ativos
-    $adapter = Get-NetAdapter |
-        Where-Object { $_.Status -eq "Up" -and $_.LinkSpeed } |
-        Sort-Object LinkSpeed -Descending |
+    # Procura adaptadores Ethernet físicos ativos
+    $adapter = Get-NetAdapter -Physical |
+        Where-Object {
+            $_.Status -eq "Up" -and
+            $_.HardwareInterface -eq $true -and
+            $_.MediaType -eq "802.3"
+        } |
         Select-Object -First 1
 
     if ($adapter) {
-        $adapter.LinkSpeed | Out-File -FilePath $outputFile -Encoding ascii -Force
+        $adapter.LinkSpeed | Out-File $outputFile -Encoding ASCII -Force
     }
     else {
-        "Disconnected" | Out-File -FilePath $outputFile -Encoding ascii -Force
+        "No Ethernet" | Out-File $outputFile -Encoding ASCII -Force
     }
+
 }
 catch {
-    "Unknown" | Out-File -FilePath $outputFile -Encoding ascii -Force
+    "Unknown" | Out-File $outputFile -Encoding ASCII -Force
 }
