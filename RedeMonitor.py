@@ -101,9 +101,32 @@ ps_lines.append("{")
 
 for i, (_, ip) in enumerate(devices, start=1):
 
-    ps_lines.append(
-        f'    $pc{i} = if (Test-Connection {ip} -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
-    )
+    if ":" in ip:
+
+        host, porta = ip.rsplit(":", 1)
+
+        ps_lines.extend([
+            f'    try {{',
+            f'        $tcp = New-Object System.Net.Sockets.TcpClient',
+            f'        $iar = $tcp.BeginConnect("{host}", {porta}, $null, $null)',
+            f'        $ok = $iar.AsyncWaitHandle.WaitOne(2000, $false)',
+            f'        if ($ok -and $tcp.Connected) {{',
+            f'            $tcp.EndConnect($iar)',
+            f'            $pc{i} = "ONLINE"',
+            f'        }} else {{',
+            f'            $pc{i} = "OFFLINE"',
+            f'        }}',
+            f'        $tcp.Close()',
+            f'    }} catch {{',
+            f'        $pc{i} = "OFFLINE"',
+            f'    }}'
+        ])
+
+    else:
+
+        ps_lines.append(
+            f'    $pc{i} = if (Test-Connection "{ip}" -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
+        )
 
 ps_output = "`n".join([f"$pc{i}" for i in range(1, len(devices) + 1)])
 
