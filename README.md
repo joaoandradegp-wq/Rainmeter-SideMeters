@@ -30,7 +30,6 @@ Cada componente possui backend próprio e integração automática com o Rainmet
   <li>🌐 Link Speed</li>
   <li>🌐 System RAM Usage</li>
 </ul>
-<br>
 
 ---
 
