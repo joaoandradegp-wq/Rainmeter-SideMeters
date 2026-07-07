@@ -96,6 +96,10 @@ print("")
 
 ps_lines = []
 
+ps_lines.append('$mutex = New-Object System.Threading.Mutex($false, "RedeMonitorMutex")')
+ps_lines.append('if (-not $mutex.WaitOne(0, $false)) { exit }')
+ps_lines.append('')
+
 ps_lines.append("while ($true)")
 ps_lines.append("{")
 
@@ -106,20 +110,7 @@ for i, (_, ip) in enumerate(devices, start=1):
         host, porta = ip.rsplit(":", 1)
 
         ps_lines.extend([
-            f'    try {{',
-            f'        $tcp = New-Object System.Net.Sockets.TcpClient',
-            f'        $iar = $tcp.BeginConnect("{host}", {porta}, $null, $null)',
-            f'        $ok = $iar.AsyncWaitHandle.WaitOne(2000, $false)',
-            f'        if ($ok -and $tcp.Connected) {{',
-            f'            $tcp.EndConnect($iar)',
-            f'            $pc{i} = "ONLINE"',
-            f'        }} else {{',
-            f'            $pc{i} = "OFFLINE"',
-            f'        }}',
-            f'        $tcp.Close()',
-            f'    }} catch {{',
-            f'        $pc{i} = "OFFLINE"',
-            f'    }}'
+           f'    $pc{i} = if (Test-NetConnection "{host}" -Port {porta} -InformationLevel Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
         ])
 
     else:
@@ -131,8 +122,21 @@ for i, (_, ip) in enumerate(devices, start=1):
 ps_output = "`n".join([f"$pc{i}" for i in range(1, len(devices) + 1)])
 
 ps_lines.append("")
-ps_lines.append(f'    "{ps_output}" | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Encoding ASCII')
+
+ps_lines.append(
+    f'    $status = "{ps_output}"'
+)
+
+ps_lines.append(
+    '    $status | Out-File "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.tmp" -Encoding ASCII'
+)
+
+ps_lines.append(
+    '    Move-Item "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.tmp" "$env:USERPROFILE\\Documents\\Rainmeter\\network_status.txt" -Force'
+)
+
 ps_lines.append("")
+
 ps_lines.append("    Start-Sleep -Seconds 5")
 ps_lines.append("}")
 
@@ -151,13 +155,7 @@ print("Gerando BAT...")
 
 bat_content = r'''@echo off
 
-for /f "tokens=2 delims=," %%a in ('
-    tasklist /v /fo csv ^| findstr /i "check_network.ps1"
-') do (
-    taskkill /F /PID %%~a >nul 2>&1
-)
-
-powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
+start "" /B powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%USERPROFILE%\Documents\Rainmeter\Scripts\check_network.ps1"
 '''
 
 bat_path = os.path.join(scripts_path, "check_network.bat")

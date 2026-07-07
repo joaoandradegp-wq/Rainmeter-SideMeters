@@ -1,5 +1,5 @@
 function Initialize()
-    path = "C:\\Users\\phobos\\Documents\\Rainmeter\\network_status.txt"
+    path = "C:\\Users\\Phobos\\Documents\\Rainmeter\\network_status.txt"
 end
 
 function Update()
@@ -67,6 +67,15 @@ function Update()
             SKIN:Bang("!SetOption", "meterPC6Status", "FontColor", "0,255,0,255")
         else
             SKIN:Bang("!SetOption", "meterPC6Status", "FontColor", "255,80,80,255")
+        end
+    end
+
+    if lines[7] then
+        SKIN:Bang("!SetOption", "meterPC7Status", "Text", lines[7])
+        if lines[7] == "ONLINE" then
+            SKIN:Bang("!SetOption", "meterPC7Status", "FontColor", "0,255,0,255")
+        else
+            SKIN:Bang("!SetOption", "meterPC7Status", "FontColor", "255,80,80,255")
         end
     end
 
