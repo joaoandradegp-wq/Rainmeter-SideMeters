@@ -248,21 +248,29 @@ SideMetersSuite/
 │
 ├── RedeMonitorUI.exe
 ├── RedeMonitor.exe
-│
 └── Rainmeter/
+    ├── network_status.txt
     │
     ├── Scripts/
     │   ├── devices.ini
     │   ├── check_network.ps1
     │   ├── check_network.bat
     │   ├── start_hidden.vbs
-    │   ├── network.lua
-    │   └── network_status.txt
+    │   └── network.lua
     │
     └── Skins/
         └── illustro/
-            └── NetworkDevices/
-                └── RedeMonitor.ini
+            ├── NetworkDevices/
+            │   └── RedeMonitor.ini
+            │
+            ├── Network/
+            │   ├── Network.ini
+            │   ├── LinkSpeed.ps1
+            │   ├── RunLinkSpeed.vbs
+            │   └── linkspeed.txt
+            │
+            └── System/
+                └── System.ini
 </pre>
 
 ---
