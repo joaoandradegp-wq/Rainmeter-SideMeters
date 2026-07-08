@@ -27,8 +27,8 @@ Cada componente possui backend próprio e integração automática com o Rainmet
 
 <ul>
   <li>🌐 RedeMonitor</li>
-  <li>🌐 Link Speed (Network.ini)</li>
-  <li>🌐 System RAM Usage (System.ini)</li>
+  <li>🌐 Link Speed (Network.ini Update)</li>
+  <li>🌐 New System RAM Usage (System.ini Update)</li>
 </ul>
 
 ---
