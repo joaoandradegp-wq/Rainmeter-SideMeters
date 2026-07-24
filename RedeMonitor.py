@@ -115,9 +115,27 @@ for i, (_, ip) in enumerate(devices, start=1):
 
     else:
 
+        # Test-Connection às vezes falha em resolver nome de PC puro
+        # (NetBIOS) mesmo com o dispositivo online. Como fallback, se o
+        # teste direto falhar, tenta resolver o nome via .NET e pinga
+        # o IP resolvido antes de considerar OFFLINE.
+        ps_lines.append(f'    $pc{i} = "OFFLINE"')
+        ps_lines.append(f'    if (Test-Connection "{ip}" -Count 1 -Quiet -ErrorAction SilentlyContinue) {{')
+        ps_lines.append(f'        $pc{i} = "ONLINE"')
+        ps_lines.append('    } else {')
+        ps_lines.append('        try {')
         ps_lines.append(
-            f'    $pc{i} = if (Test-Connection "{ip}" -Count 1 -Quiet) {{ "ONLINE" }} else {{ "OFFLINE" }}'
+            f'            $resolvido{i} = [System.Net.Dns]::GetHostAddresses("{ip}") | '
+            'Select-Object -First 1 -ExpandProperty IPAddressToString'
         )
+        ps_lines.append(
+            f'            if ($resolvido{i} -and (Test-Connection $resolvido{i} -Count 1 -Quiet -ErrorAction SilentlyContinue)) {{'
+        )
+        ps_lines.append(f'                $pc{i} = "ONLINE"')
+        ps_lines.append('            }')
+        ps_lines.append('        } catch {}')
+        ps_lines.append('    }')
+        ps_lines.append('')
 
 ps_output = "`n".join([f"$pc{i}" for i in range(1, len(devices) + 1)])
 

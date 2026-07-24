@@ -5,8 +5,10 @@ import configparser
 import os
 import re
 import subprocess
+import time
 import urllib.request
 import urllib.error
+import webbrowser
 
 DIALOG_WIDTH = 420
 DIALOG_HEIGHT = 200
@@ -35,6 +37,8 @@ SKIN_INI_PATH = os.path.join(SKIN_DIR, "ServerMonitor.ini")
 BAT_PATH = os.path.join(SCRIPTS_DIR, "start_api.bat")
 VBS_PATH = os.path.join(SCRIPTS_DIR, "run_hidden.vbs")
 PS1_PATH = os.path.join(SCRIPTS_DIR, "update_api.ps1")
+
+RAINMETER_DOWNLOAD_URL = "https://www.rainmeter.net/"
 
 # Campos que o ServerMonitor.ini le do api.txt (via regex nas [Measure*]).
 # Servem para validar se o endereço digitado realmente devolve o formato
@@ -771,7 +775,7 @@ def montar_aba_sevastolink(parent):
 
     subtitle = ttk.Label(
         header,
-        text="Configura a skin SEVASTOLINK no Rainmeter, através dos dados disponibilizados pela API do Servidor."
+        text="Configura a skin SEVASTOLINK no Rainmeter, através dos dados disponibilizados pelo Servidor."
     )
     subtitle.pack(anchor="w")
 
@@ -886,7 +890,7 @@ def montar_aba_sevastolink(parent):
 
         if not endereco_bruto:
             messagebox.showwarning("Aviso", "Informe o endereço do servidor")
-            return
+            return False
 
         endereco, url = montar_url(endereco_bruto)
 
@@ -910,7 +914,7 @@ def montar_aba_sevastolink(parent):
             if not prosseguir:
                 status_label.configure(foreground="#c0392b")
                 status_var.set(msg)
-                return
+                return False
 
         elif faltando:
 
@@ -925,7 +929,7 @@ def montar_aba_sevastolink(parent):
             if not prosseguir:
                 status_label.configure(foreground="#b8860b")
                 status_var.set(msg)
-                return
+                return False
 
         try:
             os.makedirs(SKIN_DIR, exist_ok=True)
@@ -948,7 +952,7 @@ def montar_aba_sevastolink(parent):
 
         except OSError as e:
             messagebox.showerror("Erro", f"Falha ao gravar os arquivos:\n{e}")
-            return
+            return False
 
         status_label.configure(foreground="#0a7d2c")
         status_var.set(f"Arquivos gerados com sucesso. API: {url}")
@@ -956,13 +960,94 @@ def montar_aba_sevastolink(parent):
         messagebox.showinfo(
             "Aviso",
             "Skin SEVASTOLINK configurada.\n\n"
-            "Carregue/atualize a skin \"ServerMonitor\" pelo Rainmeter "
+            "O Rainmeter irá reiniciar (ou carregar) a skin \"ServerMonitor\" "
             "para que a nova configuração tenha efeito."
         )
 
+        return True
+
+    def localizar_rainmeter():
+        # Caminhos padrão onde o instalador do Rainmeter costuma colocar o exe.
+        candidatos = [
+            os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
+            os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Rainmeter", "Rainmeter.exe"),
+            os.path.join(os.environ.get("ProgramW6432", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
+        ]
+
+        for caminho in candidatos:
+            if caminho and os.path.exists(caminho):
+                return caminho
+
+        return None
+
+    def rainmeter_esta_rodando():
+        try:
+            resultado = subprocess.run(
+                ["tasklist", "/FI", "IMAGENAME eq Rainmeter.exe"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            return "Rainmeter.exe" in resultado.stdout
+
+        except (OSError, subprocess.TimeoutExpired):
+            # Se não der para checar, segue o fluxo normal e deixa o
+            # !ActivateConfig tentar mesmo assim.
+            return True
+
+    def reiniciar_rainmeter():
+        """
+        Ativa/atualiza a skin ServerMonitor no Rainmeter via linha de
+        comando (bang !ActivateConfig), que carrega a skin se ela ainda
+        não estiver ativa, ou recarrega se já estiver - equivalente a
+        clicar em "Atualizar" na skin pelo próprio Rainmeter.
+
+        Antes disso, confere se o Rainmeter está instalado (senão abre o
+        site oficial para download) e se está aberto (senão abre o
+        programa e aguarda antes de mandar o comando).
+        """
+        rainmeter_exe = localizar_rainmeter()
+
+        if not rainmeter_exe:
+            messagebox.showwarning(
+                "Rainmeter não instalado",
+                "Não encontrei o Rainmeter instalado neste computador.\n\n"
+                "Os arquivos da skin já foram gerados. Vou abrir o site "
+                "oficial para você baixar e instalar o Rainmeter."
+            )
+            webbrowser.open(RAINMETER_DOWNLOAD_URL)
+            return False
+
+        if not rainmeter_esta_rodando():
+
+            try:
+                subprocess.Popen([rainmeter_exe])
+
+            except OSError as e:
+                messagebox.showerror("Erro", f"Falha ao abrir o Rainmeter:\n{e}")
+                return False
+
+            status_label.configure(foreground="#555555")
+            status_var.set("Abrindo o Rainmeter...")
+            parent.update_idletasks()
+
+            # dá tempo do Rainmeter terminar de iniciar antes de mandar o bang
+            time.sleep(3)
+
+        try:
+            subprocess.Popen([rainmeter_exe, "!ActivateConfig", "ServerMonitor", "ServerMonitor.ini"])
+            return True
+
+        except OSError as e:
+            messagebox.showerror("Erro", f"Falha ao acionar o Rainmeter:\n{e}")
+            return False
+
     def atualizar():
 
-        gerar()
+        gerado = gerar()
+
+        if not gerado:
+            return
 
         # Dispara o start_api.bat para iniciar (ou reiniciar) a coleta de
         # dados em segundo plano, do mesmo jeito que o Rainmeter faria
@@ -976,6 +1061,10 @@ def montar_aba_sevastolink(parent):
                 )
             except OSError as e:
                 messagebox.showerror("Erro", f"Falha ao iniciar o script:\n{e}")
+
+        # Ativa/recarrega a skin no Rainmeter, igual ao comportamento do
+        # botão Atualizar da aba RedeMonitor.
+        reiniciar_rainmeter()
 
     buttons = ttk.Frame(parent, padding=10)
     buttons.pack(fill="x", side="bottom")
