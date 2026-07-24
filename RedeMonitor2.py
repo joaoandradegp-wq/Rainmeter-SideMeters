@@ -12,18 +12,19 @@ DIALOG_WIDTH = 420
 DIALOG_HEIGHT = 200
 
 # ==========================================
-# PATHS - ABA "REDEMONITOR" (funcionalidade original)
+# PATHS - ABA "REDEMONITOR" 
 # ==========================================
 
 INI_FILE = os.path.expanduser(r"~\Documents\Rainmeter\Scripts\devices.ini")
 EXE_NAME = "RedeMonitor.exe"
 
-# ==========================================
+# ==================================================================
 # PATHS - ABA "SEVASTOLINK"
-# ==========================================
+# ==================================================================
 # Estrutura de uma skin do Rainmeter: Skins\<NomeDaSkin>\arquivo.ini
 # Por isso o ServerMonitor.ini fica dentro de Skins\ServerMonitor,
-# e não direto em Skins. Scripts e @Resources seguem a mesma raiz.
+# e não direto em Skins. 
+# Scripts e @Resources seguem a mesma raiz.
 
 SKINS_ROOT = os.path.expanduser(r"~\Documents\Rainmeter\Skins")
 SKIN_DIR = os.path.join(SKINS_ROOT, "ServerMonitor")
@@ -52,7 +53,7 @@ CAMPOS_ESPERADOS_API = [
 ]
 
 # ------------------------------------------
-# Templates estaticos (identicos aos arquivos de referencia)
+# TEMPLATES ESTÁTICOS
 # ------------------------------------------
 
 START_API_BAT = r"""@echo off
@@ -498,7 +499,7 @@ AntiAlias=1
 
 root = tk.Tk()
 
-root.title("RedeMonitor - Side Meters Suite 1.2")
+root.title("Side Meters Suite 1.3 - phobosfreeware.blogspot.com")
 root.geometry("560x520")
 root.minsize(560, 520)
 
@@ -508,12 +509,12 @@ notebook.pack(fill="both", expand=True)
 aba_redemonitor = ttk.Frame(notebook)
 aba_sevastolink = ttk.Frame(notebook)
 
-notebook.add(aba_redemonitor, text="RedeMonitor")
-notebook.add(aba_sevastolink, text="Sevastolink")
+notebook.add(aba_redemonitor, text="Status de Dispositivos")
+notebook.add(aba_sevastolink, text="Status do Servidor")
 
 
 # ==========================================
-# ABA 1 - REDEMONITOR (funcionalidade original)
+# ABA 1 - REDEMONITOR 
 # ==========================================
 
 def montar_aba_redemonitor(parent):
@@ -521,12 +522,12 @@ def montar_aba_redemonitor(parent):
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
 
-    title = ttk.Label(header, text="RedeMonitor", font=("Segoe UI", 16, "bold"))
+    title = ttk.Label(header, text="Dispositivos", font=("Segoe UI", 16, "bold"))
     title.pack(anchor="w")
 
     subtitle = ttk.Label(
         header,
-        text="Gerenciamento de dispositivos monitorados pelo Rainmeter usando Side Meters Suite"
+        text="Gerenciamento de dispositivos monitorados pelo Rainmeter."
     )
 
     subtitle.pack(anchor="w")
@@ -725,7 +726,7 @@ def montar_aba_redemonitor(parent):
 
         messagebox.showinfo(
             "Aviso",
-            "O Rainmeter irá reiniciar para que sua configuração tenha efeito."
+            "O Rainmeter irá reiniciar para que sua configuração tenha efeito!"
         )
 
     def atualizar():
@@ -757,7 +758,7 @@ def montar_aba_redemonitor(parent):
 
 
 # ==========================================
-# ABA 2 - SEVASTOLINK (nova funcionalidade)
+# ABA 2 - SEVASTOLINK 
 # ==========================================
 
 def montar_aba_sevastolink(parent):
@@ -765,19 +766,19 @@ def montar_aba_sevastolink(parent):
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
 
-    title = ttk.Label(header, text="Sevastolink", font=("Segoe UI", 16, "bold"))
+    title = ttk.Label(header, text="Monitoramento do Servidor", font=("Segoe UI", 16, "bold"))
     title.pack(anchor="w")
 
     subtitle = ttk.Label(
         header,
-        text="Configura a skin ServerMonitor do Rainmeter e os scripts que buscam os dados da API"
+        text="Configura a skin SEVASTOLINK no Rainmeter, através dos dados disponibilizados pela API do Servidor."
     )
     subtitle.pack(anchor="w")
 
     form = ttk.Frame(parent, padding=10)
     form.pack(fill="x")
 
-    ttk.Label(form, text="Endereço do servidor (IP/host e porta, ex: 192.168.100.121:8181):").pack(anchor="w")
+    ttk.Label(form, text="Endereço do Servidor (IP/host e porta, ex: 192.168.100.121:8181):").pack(anchor="w")
 
     en_endereco = ttk.Entry(form)
     en_endereco.pack(fill="x", pady=(5, 10))
@@ -789,8 +790,8 @@ def montar_aba_sevastolink(parent):
             f"  {SKIN_INI_PATH}\n"
             f"  {BAT_PATH}\n"
             f"  {VBS_PATH}\n"
-            f"  {PS1_PATH}\n"
-            f"Pasta de dados: {RESOURCES_DIR}"
+            f"  {PS1_PATH}\n\n"
+            f"Pasta de dados:\n {RESOURCES_DIR}"
         ),
         foreground="#555555",
         justify="left"
@@ -917,7 +918,7 @@ def montar_aba_sevastolink(parent):
                 "Formato de resposta inesperado",
                 f"{msg}\n\n"
                 "A skin usa esses campos para montar CPU, memória, disco e "
-                "rede — os medidores correspondentes podem ficar em branco.\n\n"
+                "rede. Os medidores correspondentes podem ficar em branco.\n\n"
                 "Deseja continuar mesmo assim?"
             )
 
@@ -954,7 +955,7 @@ def montar_aba_sevastolink(parent):
 
         messagebox.showinfo(
             "Aviso",
-            "Skin ServerMonitor configurada.\n\n"
+            "Skin SEVASTOLINK configurada.\n\n"
             "Carregue/atualize a skin \"ServerMonitor\" pelo Rainmeter "
             "para que a nova configuração tenha efeito."
         )
