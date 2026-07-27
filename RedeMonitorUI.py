@@ -40,6 +40,31 @@ PS1_PATH = os.path.join(SCRIPTS_DIR, "update_api.ps1")
 
 RAINMETER_DOWNLOAD_URL = "https://www.rainmeter.net/"
 
+# ==================================================================
+# PATHS - ABA "RAINMETER" (LINK SPEED)
+# ==================================================================
+# Adiciona o medidor de Link Speed na skin "Network" original do
+# Rainmeter (Name=Network no Network.ini). Os scripts ficam na
+# própria pasta da skin, junto do Network.ini, pois é para lá que
+# o OnRefreshAction do arquivo aponta (#CURRENTPATH#).
+
+NETWORK_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "Network")
+NETWORK_INI_PATH = os.path.join(NETWORK_SKIN_DIR, "Network.ini")
+LINKSPEED_PS1_PATH = os.path.join(NETWORK_SKIN_DIR, "LinkSpeed.ps1")
+RUNLINKSPEED_VBS_PATH = os.path.join(NETWORK_SKIN_DIR, "RunLinkSpeed.vbs")
+
+# Nome da config para o bang !ActivateConfig do Rainmeter, que espera o
+# caminho relativo à pasta Skins (ex.: "illustro\Network").
+NETWORK_SKIN_NAME = os.path.join("illustro", "Network")
+
+# ==================================================================
+# PATHS - SYSTEM.INI (skin "illustro\System")
+# ==================================================================
+
+SYSTEM_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "System")
+SYSTEM_INI_PATH = os.path.join(SYSTEM_SKIN_DIR, "System.ini")
+SYSTEM_SKIN_NAME = os.path.join("illustro", "System")
+
 # Campos que o ServerMonitor.ini le do api.txt (via regex nas [Measure*]).
 # Servem para validar se o endereço digitado realmente devolve o formato
 # que a skin espera antes de gravar qualquer arquivo.
@@ -497,13 +522,662 @@ FontColor=#FontColor#
 AntiAlias=1
 """
 
+# ------------------------------------------
+# TEMPLATES - LINK SPEED
+# ------------------------------------------
+
+LINKSPEED_PS1_TEMPLATE = r"""# LinkSpeed.ps1
+# Obtem a velocidade da interface Ethernet fisica real (exclui adaptadores virtuais).
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$outputFile = Join-Path $scriptPath "linkspeed.txt"
+
+# Palavras-chave usadas para descartar adaptadores que NAO sao placas fisicas reais,
+# mesmo que o Windows os classifique erroneamente como "fisicos".
+$virtualKeywords = @(
+    'Virtual', 'Hyper-V', 'VMware', 'VirtualBox', 'VPN', 'TAP',
+    'Bluetooth', 'Loopback', 'Miniport', 'WAN Miniport', 'Tunnel',
+    'Pseudo', 'Docker', 'Npcap', 'ExpressRoute', 'WSL'
+)
+
+try {
+
+    # Busca todos os adaptadores fisicos ativos com padrao Ethernet (802.3)
+    $candidatos = Get-NetAdapter -Physical |
+        Where-Object {
+            $_.Status -eq "Up" -and
+            $_.HardwareInterface -eq $true -and
+            $_.MediaType -eq "802.3" -and
+            $_.ConnectorPresent -eq $true               # so placas com conector fisico real
+        }
+
+    # Remove qualquer coisa que combine com nomes/descricoes de adaptadores virtuais
+    $adapter = $candidatos |
+        Where-Object {
+            $desc = "$($_.InterfaceDescription) $($_.Name)"
+            -not ($virtualKeywords | Where-Object { $desc -match $_ })
+        } |
+        # Se sobrar mais de uma, prioriza a de maior velocidade real reportada
+        Sort-Object -Property LinkSpeed -Descending |
+        Select-Object -First 1
+
+    if ($adapter) {
+        # Achou Ethernet cabeada real -> usa ela
+        $adapter.LinkSpeed | Out-File $outputFile -Encoding ASCII -Force
+    }
+    else {
+        # Sem cabo -> tenta achar um adaptador Wi-Fi ativo como fallback
+        $wifiAdapter = Get-NetAdapter -Physical |
+            Where-Object {
+                $_.Status -eq "Up" -and
+                $_.MediaType -eq "Native 802.11"
+            } |
+            Sort-Object -Property LinkSpeed -Descending |
+            Select-Object -First 1
+
+        if ($wifiAdapter) {
+            "$($wifiAdapter.LinkSpeed) (Wi-Fi)" | Out-File $outputFile -Encoding ASCII -Force
+        }
+        else {
+            "No Network" | Out-File $outputFile -Encoding ASCII -Force
+        }
+    }
+
+}
+catch {
+    "Unknown" | Out-File $outputFile -Encoding ASCII -Force
+}
+"""
+
+RUNLINKSPEED_VBS_TEMPLATE = r'''Set objShell = CreateObject("Wscript.Shell")
+objShell.Run "powershell.exe -ExecutionPolicy Bypass -File """ & Replace(WScript.ScriptFullName,"RunLinkSpeed.vbs","LinkSpeed.ps1") & """", 0, True
+'''
+
+NETWORK_INI_TEMPLATE = r"""; ----------------------------------
+; NETWORK + LINK SPEED
+; ----------------------------------
+
+[Rainmeter]
+Update=1000
+Background=#@#Background.png
+BackgroundMode=3
+BackgroundMargins=0,34,0,14
+
+OnRefreshAction=["wscript.exe" "#CURRENTPATH#RunLinkSpeed.vbs"]
+
+[Metadata]
+Name=Network
+Author=poiru / ChatGPT
+Information=Shows IP address, network activity and Ethernet Link Speed.
+License=Creative Commons BY-NC-SA 3.0
+Version=2.0
+
+[Variables]
+fontName=Trebuchet MS
+textSize=8
+colorBar=235,170,0,255
+colorText=255,255,255,205
+
+maxDownload=10485760
+maxUpload=10485760
+
+;================================================
+; MEASURES
+;================================================
+
+[measureIP]
+Measure=WebParser
+URL=https://checkip.amazonaws.com/
+UpdateRate=14400
+RegExp=(?s)^(.*)$
+StringIndex=1
+Substitute="":"N/A"
+
+[measureNetIn]
+Measure=NetIn
+NetInSpeed=#maxDownload#
+
+[measureNetOut]
+Measure=NetOut
+NetOutSpeed=#maxUpload#
+
+;================================================
+; LINK SPEED
+;================================================
+
+[MeasureRun]
+Measure=Calc
+Formula=Counter % 60
+IfEqualValue=0
+IfEqualAction=["wscript.exe" "#CURRENTPATH#RunLinkSpeed.vbs"]
+
+[MeasureLink]
+Measure=Plugin
+Plugin=WebParser
+URL=file://#CURRENTPATH#linkspeed.txt
+RegExp=(.*)
+StringIndex=1
+UpdateRate=5
+DynamicVariables=1
+
+;================================================
+; STYLES
+;================================================
+
+[styleTitle]
+StringAlign=Center
+StringCase=Upper
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,50
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=10
+AntiAlias=1
+ClipString=1
+
+[styleLeftText]
+StringAlign=Left
+StringCase=None
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,20
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=#textSize#
+AntiAlias=1
+ClipString=1
+
+[styleRightText]
+StringAlign=Right
+StringCase=None
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,20
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=#textSize#
+AntiAlias=1
+ClipString=1
+
+[styleBar]
+BarColor=#colorBar#
+BarOrientation=HORIZONTAL
+SolidColor=255,255,255,15
+
+[styleSeperator]
+SolidColor=255,255,255,15
+
+;================================================
+; TITLE
+;================================================
+
+[meterTitle]
+Meter=String
+MeterStyle=styleTitle
+X=100
+Y=12
+W=190
+H=18
+Text=Network
+
+;================================================
+; IP
+;================================================
+
+[meterIPLabel]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=40
+W=190
+H=14
+Text=IP Address
+
+[meterIPValue]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureIP
+X=200
+Y=0r
+W=190
+H=14
+Text=%1
+
+[meterSeperator]
+Meter=Image
+MeterStyle=styleSeperator
+X=10
+Y=52
+W=190
+H=1
+
+;================================================
+; UPLOAD
+;================================================
+
+[meterUploadLabel]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=60
+W=190
+H=14
+Text=Upload
+
+[meterUploadValue]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureNetOut
+X=200
+Y=0r
+W=190
+H=14
+Text=%1B/s
+NumOfDecimals=1
+AutoScale=1
+
+[meterUploadBar]
+Meter=Bar
+MeterStyle=styleBar
+MeasureName=measureNetOut
+X=10
+Y=72
+W=190
+H=1
+
+;================================================
+; DOWNLOAD
+;================================================
+
+[meterDownloadLabel]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=80
+W=190
+H=14
+Text=Download
+
+[meterDownloadValue]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureNetIn
+X=200
+Y=0r
+W=190
+H=14
+Text=%1B/s
+NumOfDecimals=1
+AutoScale=1
+
+[meterDownloadBar]
+Meter=Bar
+MeterStyle=styleBar
+MeasureName=measureNetIn
+X=10
+Y=92
+W=190
+H=1
+
+;================================================
+; LINK SPEED
+;================================================
+
+[meterLinkLabel]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=100
+W=190
+H=14
+Text=Link Speed
+
+[meterLinkValue]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=MeasureLink
+X=200
+Y=0r
+W=190
+H=14
+Text=%1
+
+[meterLinkSeparator]
+Meter=Image
+MeterStyle=styleSeperator
+X=10
+Y=112
+W=190
+H=1
+"""
+
+# ------------------------------------------
+# TEMPLATE - SYSTEM.INI 
+# ------------------------------------------
+
+SYSTEM_INI_TEMPLATE = r"""[Rainmeter]
+Update=1000
+Background=#@#Background.png
+BackgroundMode=3
+BackgroundMargins=0,34,0,14
+
+[Metadata]
+Name=System
+Author=poiru / ChatGPT
+Information=Displays system information.
+Version=2.0
+
+[Variables]
+fontName=Trebuchet MS
+textSize=8
+colorBar=235,170,0,255
+colorText=255,255,255,205
+
+;------------------------------------------------
+; SYSTEM MEASURES
+;------------------------------------------------
+
+[measureCPU]
+Measure=CPU
+Processor=0
+
+[measureRAM]
+Measure=PhysicalMemory
+UpdateDivider=20
+
+[measureRAMPercent]
+Measure=Calc
+Formula=(measureRAM / measureRAMTotal) * 100
+DynamicVariables=1
+
+[measureRAMUsed]
+Measure=Calc
+Formula=(measureRAM/1024/1024/1024)
+DynamicVariables=1
+
+[measureRAMTotal]
+Measure=PhysicalMemory
+Total=1
+UpdateDivider=20
+
+[measureRAMTotalGB]
+Measure=Calc
+Formula=(measureRAMTotal/1024/1024/1024)
+DynamicVariables=1
+
+[measureRAMFree]
+Measure=Calc
+Formula=((measureRAMTotal-measureRAM)/1024/1024/1024)
+DynamicVariables=1
+
+;------------------------------------------------
+; STYLES
+;------------------------------------------------
+
+[styleTitle]
+StringAlign=Center
+StringCase=Upper
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,50
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=10
+AntiAlias=1
+ClipString=1
+
+[styleLeftText]
+StringAlign=Left
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,20
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=#textSize#
+AntiAlias=1
+ClipString=1
+
+[styleRightText]
+StringAlign=Right
+StringStyle=Bold
+StringEffect=Shadow
+FontEffectColor=0,0,0,20
+FontColor=#colorText#
+FontFace=#fontName#
+FontSize=#textSize#
+AntiAlias=1
+ClipString=1
+
+[styleBar]
+BarColor=#colorBar#
+BarOrientation=HORIZONTAL
+SolidColor=255,255,255,15
+
+[styleSeparator]
+SolidColor=255,255,255,15
+
+;------------------------------------------------
+; TITLE
+;------------------------------------------------
+
+[meterTitle]
+Meter=String
+MeterStyle=styleTitle
+X=100
+Y=12
+W=190
+H=18
+Text=SYSTEM
+LeftMouseUpAction=["taskmgr.exe"]
+ToolTipText=Open Task Manager
+
+;------------------------------------------------
+; CPU
+;------------------------------------------------
+
+[meterLabelCPU]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=40
+W=190
+H=14
+Text=CPU Usage
+
+[meterValueCPU]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureCPU
+X=200
+Y=0r
+W=190
+H=14
+Text=%1%
+
+[meterBarCPU]
+Meter=Bar
+MeterStyle=styleBar
+MeasureName=measureCPU
+X=10
+Y=52
+W=190
+H=1
+
+;------------------------------------------------
+; RAM
+;------------------------------------------------
+
+[meterLabelRAM]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=60
+W=190
+H=14
+Text=RAM
+
+[meterValueRAM]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureRAMPercent
+X=200
+Y=0r
+W=190
+H=14
+NumOfDecimals=0
+Text=%1%
+
+[meterBarRAM]
+Meter=Bar
+MeterStyle=styleBar
+MeasureName=measureRAM
+X=10
+Y=72
+W=190
+H=1
+
+;------------------------------------------------
+; AVAILABLE RAM
+;------------------------------------------------
+
+[meterLabelFree]
+Meter=String
+MeterStyle=styleLeftText
+X=10
+Y=80
+W=190
+H=14
+Text=Available
+
+[meterValueFree]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureRAMFree
+X=200
+Y=0r
+W=190
+H=14
+NumOfDecimals=1
+Text=%1 GB
+
+[meterBarFree]
+Meter=Bar
+MeterStyle=styleBar
+MeasureName=measureRAM
+InvertMeasure=1
+X=10
+Y=92
+W=190
+H=1
+
+;------------------------------------------------
+; BOTTOM SEPARATOR
+;------------------------------------------------
+
+[meterSeparator]
+Meter=Image
+MeterStyle=styleSeparator
+X=10
+Y=97
+W=190
+H=1
+"""
+
+# ==========================================
+# HELPERS - ATIVAÇÃO DE SKINS NO RAINMETER
+# ==========================================
+# Compartilhados entre as abas "Status do Servidor" e "Rainmeter",
+# já que ambas precisam localizar o Rainmeter.exe, garantir que ele
+# esteja aberto e mandar o !ActivateConfig da skin correspondente.
+
+def localizar_rainmeter():
+    # Caminhos padrão onde o instalador do Rainmeter costuma colocar o exe.
+    candidatos = [
+        os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
+        os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Rainmeter", "Rainmeter.exe"),
+        os.path.join(os.environ.get("ProgramW6432", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
+    ]
+
+    for caminho in candidatos:
+        if caminho and os.path.exists(caminho):
+            return caminho
+
+    return None
+
+
+def rainmeter_esta_rodando():
+    try:
+        resultado = subprocess.run(
+            ["tasklist", "/FI", "IMAGENAME eq Rainmeter.exe"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        return "Rainmeter.exe" in resultado.stdout
+
+    except (OSError, subprocess.TimeoutExpired):
+        # Se não der para checar, segue o fluxo normal e deixa o
+        # !ActivateConfig tentar mesmo assim.
+        return True
+
+
+def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label=None):
+    """
+    Ativa/atualiza uma skin no Rainmeter via linha de comando (bang
+    !ActivateConfig), que carrega a skin se ela ainda não estiver
+    ativa, ou recarrega se já estiver - equivalente a clicar em
+    "Atualizar" na skin pelo próprio Rainmeter.
+
+    Antes disso, confere se o Rainmeter está instalado (senão abre o
+    site oficial para download) e se está aberto (senão abre o
+    programa e aguarda antes de mandar o comando).
+    """
+    rainmeter_exe = localizar_rainmeter()
+
+    if not rainmeter_exe:
+        messagebox.showwarning(
+            "Rainmeter não instalado",
+            "Não encontrei o Rainmeter instalado neste computador.\n\n"
+            "Os arquivos da skin já foram gerados. Vou abrir o site "
+            "oficial para você baixar e instalar o Rainmeter."
+        )
+        webbrowser.open(RAINMETER_DOWNLOAD_URL)
+        return False
+
+    if not rainmeter_esta_rodando():
+
+        try:
+            subprocess.Popen([rainmeter_exe])
+
+        except OSError as e:
+            messagebox.showerror("Erro", f"Falha ao abrir o Rainmeter:\n{e}")
+            return False
+
+        if status_label is not None and status_var is not None:
+            status_label.configure(foreground="#555555")
+            status_var.set("Abrindo o Rainmeter...")
+            root.update_idletasks()
+
+        # dá tempo do Rainmeter terminar de iniciar antes de mandar o bang
+        time.sleep(3)
+
+    try:
+        subprocess.Popen([rainmeter_exe, "!ActivateConfig", skin_name, ini_filename])
+        return True
+
+    except OSError as e:
+        messagebox.showerror("Erro", f"Falha ao acionar o Rainmeter:\n{e}")
+        return False
+
+
 # ==========================================
 # ROOT
 # ==========================================
 
 root = tk.Tk()
 
-root.title("Side Meters Suite 1.3 - phobosfreeware.blogspot.com")
+root.title("Side Meters Suite 1.4 - phobosfreeware.blogspot.com")
 root.geometry("560x520")
 root.minsize(560, 520)
 
@@ -512,9 +1186,11 @@ notebook.pack(fill="both", expand=True)
 
 aba_redemonitor = ttk.Frame(notebook)
 aba_sevastolink = ttk.Frame(notebook)
+aba_rainmeter = ttk.Frame(notebook)
 
 notebook.add(aba_redemonitor, text="Status de Dispositivos")
 notebook.add(aba_sevastolink, text="Status do Servidor")
+notebook.add(aba_rainmeter, text="Rainmeter")
 
 
 # ==========================================
@@ -966,82 +1642,6 @@ def montar_aba_sevastolink(parent):
 
         return True
 
-    def localizar_rainmeter():
-        # Caminhos padrão onde o instalador do Rainmeter costuma colocar o exe.
-        candidatos = [
-            os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
-            os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Rainmeter", "Rainmeter.exe"),
-            os.path.join(os.environ.get("ProgramW6432", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
-        ]
-
-        for caminho in candidatos:
-            if caminho and os.path.exists(caminho):
-                return caminho
-
-        return None
-
-    def rainmeter_esta_rodando():
-        try:
-            resultado = subprocess.run(
-                ["tasklist", "/FI", "IMAGENAME eq Rainmeter.exe"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            return "Rainmeter.exe" in resultado.stdout
-
-        except (OSError, subprocess.TimeoutExpired):
-            # Se não der para checar, segue o fluxo normal e deixa o
-            # !ActivateConfig tentar mesmo assim.
-            return True
-
-    def reiniciar_rainmeter():
-        """
-        Ativa/atualiza a skin ServerMonitor no Rainmeter via linha de
-        comando (bang !ActivateConfig), que carrega a skin se ela ainda
-        não estiver ativa, ou recarrega se já estiver - equivalente a
-        clicar em "Atualizar" na skin pelo próprio Rainmeter.
-
-        Antes disso, confere se o Rainmeter está instalado (senão abre o
-        site oficial para download) e se está aberto (senão abre o
-        programa e aguarda antes de mandar o comando).
-        """
-        rainmeter_exe = localizar_rainmeter()
-
-        if not rainmeter_exe:
-            messagebox.showwarning(
-                "Rainmeter não instalado",
-                "Não encontrei o Rainmeter instalado neste computador.\n\n"
-                "Os arquivos da skin já foram gerados. Vou abrir o site "
-                "oficial para você baixar e instalar o Rainmeter."
-            )
-            webbrowser.open(RAINMETER_DOWNLOAD_URL)
-            return False
-
-        if not rainmeter_esta_rodando():
-
-            try:
-                subprocess.Popen([rainmeter_exe])
-
-            except OSError as e:
-                messagebox.showerror("Erro", f"Falha ao abrir o Rainmeter:\n{e}")
-                return False
-
-            status_label.configure(foreground="#555555")
-            status_var.set("Abrindo o Rainmeter...")
-            parent.update_idletasks()
-
-            # dá tempo do Rainmeter terminar de iniciar antes de mandar o bang
-            time.sleep(3)
-
-        try:
-            subprocess.Popen([rainmeter_exe, "!ActivateConfig", "ServerMonitor", "ServerMonitor.ini"])
-            return True
-
-        except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao acionar o Rainmeter:\n{e}")
-            return False
-
     def atualizar():
 
         gerado = gerar()
@@ -1064,7 +1664,7 @@ def montar_aba_sevastolink(parent):
 
         # Ativa/recarrega a skin no Rainmeter, igual ao comportamento do
         # botão Atualizar da aba RedeMonitor.
-        reiniciar_rainmeter()
+        ativar_skin_rainmeter("ServerMonitor", "ServerMonitor.ini", status_var, status_label)
 
     buttons = ttk.Frame(parent, padding=10)
     buttons.pack(fill="x", side="bottom")
@@ -1075,8 +1675,334 @@ def montar_aba_sevastolink(parent):
     carregar_endereco_atual()
 
 
+# ==========================================
+# ABA 3 - RAINMETER (LINK SPEED)
+# ==========================================
+
+def montar_aba_rainmeter(parent):
+
+    sub_notebook = ttk.Notebook(parent)
+    sub_notebook.pack(fill="both", expand=True)
+
+    sub_aba_network = ttk.Frame(sub_notebook)
+    sub_aba_system = ttk.Frame(sub_notebook)
+
+    sub_notebook.add(sub_aba_network, text="Network")
+    sub_notebook.add(sub_aba_system, text="System")
+
+    montar_subaba_network(sub_aba_network)
+    montar_subaba_system(sub_aba_system)
+
+
+# ------------------------------------------------------------
+# SUB-ABA - LINK SPEED (skin "illustro\Network")
+# ------------------------------------------------------------
+
+def montar_subaba_network(parent):
+
+    header = ttk.Frame(parent, padding=10)
+    header.pack(fill="x")
+
+    title = ttk.Label(header, text="Link Speed", font=("Segoe UI", 16, "bold"))
+    title.pack(anchor="w")
+
+    subtitle = ttk.Label(
+        header,
+        text="Adiciona o medidor de velocidade do link ao bloco \"Network\" já existente no Rainmeter."
+    )
+    subtitle.pack(anchor="w")
+
+    form = ttk.Frame(parent, padding=10)
+    form.pack(fill="both", expand=True)
+
+    status_ini_var = tk.StringVar(value="")
+    status_ini_label = ttk.Label(form, textvariable=status_ini_var, justify="left")
+    status_ini_label.pack(anchor="w", pady=(0, 5))
+
+    status_link_var = tk.StringVar(value="")
+    status_link_label = ttk.Label(form, textvariable=status_link_var, justify="left")
+    status_link_label.pack(anchor="w", pady=(0, 10))
+
+    info = ttk.Label(
+        form,
+        text=(
+            "Arquivos envolvidos:\n"
+            f"  {NETWORK_INI_PATH}\n"
+            f"  {LINKSPEED_PS1_PATH}\n"
+            f"  {RUNLINKSPEED_VBS_PATH}"
+        ),
+        foreground="#555555",
+        justify="left"
+    )
+    info.pack(anchor="w", pady=(0, 10))
+
+    status_var = tk.StringVar(value="")
+    status_label = ttk.Label(form, textvariable=status_var, foreground="#0a7d2c")
+    status_label.pack(anchor="w")
+
+    def link_speed_configurado():
+
+        if not os.path.exists(NETWORK_INI_PATH):
+            return False
+
+        try:
+            with open(NETWORK_INI_PATH, "r", encoding="utf-8") as f:
+                conteudo = f.read()
+
+        except OSError:
+            return False
+
+        return "MeasureLink" in conteudo
+
+    def verificar_status():
+
+        if os.path.exists(NETWORK_INI_PATH):
+            status_ini_label.configure(foreground="#0a7d2c")
+            status_ini_var.set(f"Network.ini original encontrado em:\n  {NETWORK_INI_PATH}")
+        else:
+            status_ini_label.configure(foreground="#c0392b")
+            status_ini_var.set(
+                "Network.ini original não encontrado.\n"
+                f"  Esperado em: {NETWORK_INI_PATH}"
+            )
+
+        if link_speed_configurado():
+            status_link_label.configure(foreground="#0a7d2c")
+            status_link_var.set("Link Speed já está configurado neste bloco.")
+            botao_adicionar.state(["disabled"])
+            botao_atualizar.state(["disabled"])
+        else:
+            status_link_label.configure(foreground="#b8860b")
+            status_link_var.set("Link Speed ainda não foi adicionado a este bloco.")
+            botao_adicionar.state(["!disabled"])
+            botao_atualizar.state(["!disabled"])
+
+    def adicionar_link_speed():
+
+        if not os.path.exists(NETWORK_INI_PATH):
+
+            messagebox.showwarning(
+                "Aviso",
+                "O Network.ini original não foi encontrado.\n\n"
+                f"Esperado em:\n{NETWORK_INI_PATH}\n\n"
+                "Instale/carregue o bloco \"Network\" do Rainmeter antes de continuar."
+            )
+            return
+
+        if link_speed_configurado():
+
+            prosseguir = messagebox.askyesno(
+                "Link Speed já configurado",
+                "O Link Speed já parece estar configurado neste bloco.\n\n"
+                "Deseja sobrescrever o Network.ini e os scripts mesmo assim?"
+            )
+
+            if not prosseguir:
+                return
+
+        else:
+
+            prosseguir = messagebox.askyesno(
+                "Adicionar Link Speed",
+                "Isso vai sobrescrever o Network.ini atual por uma versão que "
+                "já inclui o medidor de Link Speed, e criar os scripts "
+                "LinkSpeed.ps1 e RunLinkSpeed.vbs na mesma pasta.\n\n"
+                "Deseja continuar?"
+            )
+
+            if not prosseguir:
+                return
+
+        try:
+            os.makedirs(NETWORK_SKIN_DIR, exist_ok=True)
+
+            with open(NETWORK_INI_PATH, "w", encoding="utf-8") as f:
+                f.write(NETWORK_INI_TEMPLATE)
+
+            with open(LINKSPEED_PS1_PATH, "w", encoding="utf-8") as f:
+                f.write(LINKSPEED_PS1_TEMPLATE)
+
+            with open(RUNLINKSPEED_VBS_PATH, "w", encoding="utf-8") as f:
+                f.write(RUNLINKSPEED_VBS_TEMPLATE)
+
+        except OSError as e:
+            messagebox.showerror("Erro", f"Falha ao gravar os arquivos:\n{e}")
+            return
+
+        status_label.configure(foreground="#0a7d2c")
+        status_var.set("Link Speed adicionado com sucesso ao Network.ini.")
+
+        verificar_status()
+
+        messagebox.showinfo(
+            "Aviso",
+            "Link Speed configurado na skin \"Network\".\n\n"
+            "O Rainmeter irá reiniciar para que a nova configuração tenha efeito."
+        )
+
+    def atualizar():
+        ativar_skin_rainmeter(NETWORK_SKIN_NAME, "Network.ini", status_var, status_label)
+
+    buttons = ttk.Frame(parent, padding=10)
+    buttons.pack(fill="x", side="bottom")
+
+    botao_atualizar = ttk.Button(buttons, text="Atualizar", command=atualizar)
+    botao_atualizar.pack(side="right")
+
+    botao_adicionar = ttk.Button(buttons, text="Adicionar", command=adicionar_link_speed)
+    botao_adicionar.pack(side="right", padx=5)
+
+    verificar_status()
+
+
+# ------------------------------------------------------------
+# SUB-ABA - SYSTEM.INI (skin "illustro\System")
+# ------------------------------------------------------------
+
+def montar_subaba_system(parent):
+
+    header_sistema = ttk.Frame(parent, padding=10)
+    header_sistema.pack(fill="x")
+
+    ttk.Label(header_sistema, text="System CPU/RAM Update", font=("Segoe UI", 16, "bold")).pack(anchor="w")
+
+    ttk.Label(
+        header_sistema,
+        text="Aplica uma configuração atualizada de CPU/RAM no bloco \"System\" já existente no Rainmeter."
+    ).pack(anchor="w")
+
+    form_sistema = ttk.Frame(parent, padding=10)
+    form_sistema.pack(fill="both", expand=True)
+
+    status_sistema_ini_var = tk.StringVar(value="")
+    status_sistema_ini_label = ttk.Label(form_sistema, textvariable=status_sistema_ini_var, justify="left")
+    status_sistema_ini_label.pack(anchor="w", pady=(0, 5))
+
+    status_sistema_config_var = tk.StringVar(value="")
+    status_sistema_config_label = ttk.Label(form_sistema, textvariable=status_sistema_config_var, justify="left")
+    status_sistema_config_label.pack(anchor="w", pady=(0, 10))
+
+    info_sistema = ttk.Label(
+        form_sistema,
+        text=f"Arquivo:\n  {SYSTEM_INI_PATH}",
+        foreground="#555555",
+        justify="left"
+    )
+    info_sistema.pack(anchor="w", pady=(0, 10))
+
+    status_sistema_var = tk.StringVar(value="")
+    status_sistema_label = ttk.Label(form_sistema, textvariable=status_sistema_var, foreground="#0a7d2c")
+    status_sistema_label.pack(anchor="w")
+
+    def sistema_configurado():
+
+        if not os.path.exists(SYSTEM_INI_PATH):
+            return False
+
+        try:
+            with open(SYSTEM_INI_PATH, "r", encoding="utf-8") as f:
+                conteudo = f.read()
+
+        except OSError:
+            return False
+
+        return "measureRAMTotalGB" in conteudo
+
+    def verificar_status_sistema():
+
+        if os.path.exists(SYSTEM_INI_PATH):
+            status_sistema_ini_label.configure(foreground="#0a7d2c")
+            status_sistema_ini_var.set(f"System.ini original encontrado em:\n  {SYSTEM_INI_PATH}")
+        else:
+            status_sistema_ini_label.configure(foreground="#c0392b")
+            status_sistema_ini_var.set(
+                "System.ini original não encontrado.\n"
+                f"  Esperado em: {SYSTEM_INI_PATH}"
+            )
+
+        if sistema_configurado():
+            status_sistema_config_label.configure(foreground="#0a7d2c")
+            status_sistema_config_var.set("A atualização já está configurada.")
+            botao_aplicar_sistema.state(["disabled"])
+            botao_atualizar_sistema.state(["disabled"])
+        else:
+            status_sistema_config_label.configure(foreground="#b8860b")
+            status_sistema_config_var.set("O bloco ainda não está configurado.")
+            botao_aplicar_sistema.state(["!disabled"])
+            botao_atualizar_sistema.state(["!disabled"])
+
+    def aplicar_system_ini():
+
+        if not os.path.exists(SYSTEM_INI_PATH):
+
+            messagebox.showwarning(
+                "Aviso",
+                "O System.ini original não foi encontrado.\n\n"
+                f"Esperado em:\n{SYSTEM_INI_PATH}\n\n"
+                "Instale/carregue o bloco \"System\" do Rainmeter antes de continuar."
+            )
+            return
+
+        if sistema_configurado():
+
+            messagebox.showinfo(
+                "Aviso",
+                "O System.ini já está configurado. Nenhuma alteração foi necessária."
+            )
+            return
+
+        prosseguir = messagebox.askyesno(
+            "Aplicar System.ini",
+            "Isso vai sobrescrever o System.ini atual pela versão configurada "
+            "(CPU, RAM, total e disponível em GB).\n\n"
+            "Deseja continuar?"
+        )
+
+        if not prosseguir:
+            return
+
+        try:
+            os.makedirs(SYSTEM_SKIN_DIR, exist_ok=True)
+
+            with open(SYSTEM_INI_PATH, "w", encoding="utf-8") as f:
+                f.write(SYSTEM_INI_TEMPLATE)
+
+        except OSError as e:
+            messagebox.showerror("Erro", f"Falha ao gravar o arquivo:\n{e}")
+            return
+
+        status_sistema_label.configure(foreground="#0a7d2c")
+        status_sistema_var.set("Atualização configurada com sucesso.")
+
+        verificar_status_sistema()
+
+        messagebox.showinfo(
+            "Aviso",
+            "Bloco \"System\" configurado.\n\n"
+            "O Rainmeter irá reiniciar (ou carregar) o bloco para que a "
+            "nova configuração tenha efeito."
+        )
+
+        ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label)
+
+    def atualizar_sistema():
+        ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label)
+
+    buttons_sistema = ttk.Frame(parent, padding=10)
+    buttons_sistema.pack(fill="x", side="bottom")
+
+    botao_atualizar_sistema = ttk.Button(buttons_sistema, text="Atualizar", command=atualizar_sistema)
+    botao_atualizar_sistema.pack(side="right")
+
+    botao_aplicar_sistema = ttk.Button(buttons_sistema, text="Adicionar", command=aplicar_system_ini)
+    botao_aplicar_sistema.pack(side="right", padx=5)
+
+    verificar_status_sistema()
+
+
 montar_aba_redemonitor(aba_redemonitor)
 montar_aba_sevastolink(aba_sevastolink)
+montar_aba_rainmeter(aba_rainmeter)
 
 # ==========================================
 # START
