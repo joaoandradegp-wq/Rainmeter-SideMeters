@@ -6,6 +6,7 @@ Coleção de widgets, skins e automações desenvolvidas para o Rainmeter, focad
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
+  <img src="https://img.shields.io/badge/Versão-1.4-blue">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
   <img src="https://img.shields.io/badge/Integração-Rainmeter-lightgrey">
   <img src="https://img.shields.io/badge/Language-PT--BR-orange">
@@ -23,15 +24,19 @@ O <b>Side Meters Suite</b> é uma suíte de widgets, skins e ferramentas para o 
 Cada módulo possui backend próprio, integração automática com o Rainmeter e pode ser configurado através de uma interface gráfica, eliminando praticamente toda necessidade de edição manual de arquivos.
 </p>
 
+<p>
+Na versão atual, a aplicação também é responsável por configurar automaticamente diversas skins do Rainmeter, validar integrações com APIs, gerar scripts auxiliares e atualizar widgets oficiais do Rainmeter sem necessidade de qualquer configuração manual.
+</p>
+
 ---
 
 <h2>🧩 Módulos atuais</h2>
 
 <ul>
-  <li>🌐 <b>RedeMonitor</b> — Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
+  <li>🌐 <b>SideMeterDevices</b> — Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
   <li>🖥 <b>SEVASTOLINK</b> — Dashboard inspirado nos computadores da Sevastopol (Alien: Isolation)</li>
-  <li>🌐 Link Speed (Network.ini Update)</li>
-  <li>💾 New System RAM Usage (System.ini Update)</li>
+  <li>🌐 Link Speed (Atualização automática do widget Network)</li>
+  <li>💾 System Update (Atualização do widget System)</li>
 </ul>
 
 ---
@@ -40,32 +45,34 @@ Cada módulo possui backend próprio, integração automática com o Rainmeter e
 
 <ol>
   <li>Instale o Rainmeter pelo site oficial <a href="https://www.rainmeter.net/" target="_blank">clicando aqui</a></li>
-  <li>Execute <b>RedeMonitorUI.exe</b></li>
+  <li>Execute o <b>SideMetersSuite.exe</b></li>
   <li>Escolha o módulo desejado</li>
   <li>Configure os parâmetros</li>
   <li>Clique em <b>Atualizar</b></li>
-  <li>O Rainmeter será configurado automaticamente</li>
+  <li>O Side Meters Suite fará toda a configuração automaticamente</li>
 </ol>
 
 ---
 
-<h2>🌐 RedeMonitor</h2>
+<h2>🌐 Side Meter Devices</h2>
 
 <p>
-O <b>RedeMonitor</b> é responsável pelo monitoramento contínuo de equipamentos locais ou remotos, exibindo seu status diretamente no desktop através do Rainmeter.
+O <b>SideMeterDevices</b> é responsável pelo monitoramento contínuo de equipamentos locais ou remotos, exibindo seu status diretamente no desktop através do Rainmeter.
 </p>
 
 <p>
-Cada dispositivo pode ser monitorado utilizando Ping tradicional ou conexão TCP, permitindo verificar tanto máquinas quanto serviços específicos.
+Cada dispositivo pode ser monitorado utilizando endereço IP, Hostname da rede local ou serviços DDNS, permitindo acompanhar computadores, servidores, roteadores, NAS, câmeras IP e outros dispositivos conectados à rede.
 </p>
 
 <ul>
   <li>✅ Status ONLINE / OFFLINE</li>
-  <li>🌐 Suporte a IP, Hostname e DDNS</li>
-  <li>🔌 Suporte a monitoramento por porta TCP</li>
+  <li>🌐 Suporte a IP</li>
+  <li>🖥 Suporte a Hostname</li>
+  <li>🌍 Suporte a DDNS</li>
   <li>⚡ Atualização automática</li>
   <li>🟢 Indicadores visuais</li>
   <li>🔄 Monitor persistente em background</li>
+  <li>⚙️ Configuração gráfica dos dispositivos</li>
 </ul>
 
 ---
@@ -81,18 +88,57 @@ Ela transforma o Rainmeter em um painel de monitoramento do servidor, utilizando
 </p>
 
 <p>
-A configuração é totalmente automatizada pela interface do Side Meters Suite.
+Antes de gerar qualquer configuração, o Side Meters Suite valida automaticamente a resposta da API, verificando se todos os campos necessários estão disponíveis para a skin.
 </p>
 
 <ul>
-  <li>🖥 Utilização do layout inspirado na Sevastopol</li>
+  <li>🖥 Layout inspirado na Sevastopol</li>
   <li>📡 Integração com API HTTP</li>
   <li>🌡 Monitoramento de CPU</li>
   <li>💾 Monitoramento de Memória</li>
   <li>💿 Utilização de Disco</li>
   <li>🌐 Rede</li>
+  <li>📥 Download</li>
+  <li>📤 Upload</li>
+  <li>✔ Teste automático da API</li>
   <li>⚡ Atualização automática</li>
   <li>🔄 Recarregamento automático da skin</li>
+</ul>
+
+---
+
+<h2>🌐 Link Speed</h2>
+
+<p>
+Atualiza automaticamente o widget oficial <b>Network</b> do Rainmeter adicionando o monitoramento da velocidade real da conexão de rede.
+</p>
+
+<p>
+O módulo identifica automaticamente conexões Ethernet e Wi-Fi, criando todos os scripts necessários para manter a informação atualizada no widget.
+</p>
+
+<ul>
+  <li>⚡ Link Speed em tempo real</li>
+  <li>🌐 Compatível com Ethernet</li>
+  <li>📶 Compatível com Wi-Fi</li>
+  <li>📄 Geração automática dos scripts</li>
+  <li>🔄 Atualização automática do widget</li>
+</ul>
+
+---
+
+<h2>💾 System Update</h2>
+
+<p>
+Atualiza automaticamente o widget oficial <b>System</b> do Rainmeter, substituindo sua configuração padrão por uma versão mais completa.
+</p>
+
+<ul>
+  <li>🖥 Utilização de CPU</li>
+  <li>💾 Utilização de Memória RAM</li>
+  <li>📊 Memória Total</li>
+  <li>📉 Memória Disponível</li>
+  <li>⚡ Atualização automática do widget</li>
 </ul>
 
 ---
@@ -100,20 +146,26 @@ A configuração é totalmente automatizada pela interface do Side Meters Suite.
 <h2>🖥 Interface de Configuração</h2>
 
 <p>
-O <b>RedeMonitorUI</b> centraliza toda a configuração da suíte.
+O <b>Side Meters Suite</b> centraliza toda a configuração da suíte através de uma única interface gráfica.
 </p>
 
 <p>
-A interface agora possui duas abas independentes:
+A aplicação possui três áreas principais:
 </p>
 
 <ul>
-  <li>🌐 Status de Dispositivos (RedeMonitor)</li>
+  <li>🌐 Status de Dispositivos (SideMeterDevices)</li>
   <li>🖥 Status do Servidor (SEVASTOLINK)</li>
+  <li>⚙️ Rainmeter
+      <ul>
+         <li>Network (Link Speed)</li>
+         <li>System (CPU/RAM Update)</li>
+      </ul>
+  </li>
 </ul>
 
 <p>
-Cada módulo pode ser configurado individualmente através da interface gráfica.
+Cada módulo pode ser configurado individualmente sem necessidade de editar arquivos manualmente.
 </p>
 
 ---
@@ -121,16 +173,16 @@ Cada módulo pode ser configurado individualmente através da interface gráfica
 <h2>⚙️ Automação</h2>
 
 <p>
-O Side Meters Suite gera automaticamente todos os arquivos necessários para funcionamento das skins.
+O Side Meters Suite gera automaticamente todos os arquivos necessários para funcionamento das skins e widgets.
 </p>
 
 <ul>
   <li>PowerShell</li>
   <li>VBScript</li>
   <li>Batch Script</li>
-  <li>LUA</li>
   <li>Arquivos INI</li>
   <li>Pastas do Rainmeter</li>
+  <li>Arquivos de configuração</li>
 </ul>
 
 <p>
@@ -138,11 +190,14 @@ Durante a atualização o sistema pode:
 </p>
 
 <ul>
-  <li>Validar configurações</li>
+  <li>Validar a comunicação com APIs</li>
   <li>Gerar arquivos automaticamente</li>
+  <li>Criar diretórios necessários</li>
   <li>Inicializar scripts em segundo plano</li>
-  <li>Abrir o Rainmeter automaticamente</li>
+  <li>Detectar o Rainmeter instalado</li>
+  <li>Abrir automaticamente o Rainmeter</li>
   <li>Recarregar as skins</li>
+  <li>Atualizar widgets oficiais</li>
 </ul>
 
 ---
@@ -150,20 +205,20 @@ Durante a atualização o sistema pode:
 <h2>🧩 Arquitetura</h2>
 
 <pre>
-                  RedeMonitorUI.exe
+                 Side Meters Suite.exe
                           │
-        ┌─────────────────┴──────────────────┐
-        │                                    │
-        ▼                                    ▼
-  RedeMonitor                      SEVASTOLINK
-        │                                    │
- devices.ini                    update_api.ps1
-        │                                    │
-check_network.ps1                    api.txt
-        │                                    │
-network_status.txt             ServerMonitor.ini
-        │                                    │
-        └──────────────► Rainmeter ◄─────────┘
+        ┌─────────────────┼──────────────────────┐
+        │                 │                      │
+        ▼                 ▼                      ▼
+ SideMeterDevices    SEVASTOLINK         Rainmeter Tools
+        │                 │                      │
+   devices.ini      update_api.ps1        Network.ini
+        │                 │               System.ini
+check_network.ps1      api.txt            LinkSpeed.ps1
+        │                 │                      │   
+network_status.txt  ServerMonitor.ini            │
+        │                 │                      │
+        └──────────────► Rainmeter ◄─────────────┘
 </pre>
 
 ---
@@ -187,27 +242,27 @@ Documentos/
     └── Skins/
         │
         ├── illustro/
-        │   └── NetworkDevices/
-        │       └── RedeMonitor.ini
-        │
-        ├── ServerMonitor/
-        │   ├── ServerMonitor.ini
-        │   ├── Scripts/
-        │   │   ├── start_api.bat
-        │   │   ├── run_hidden.vbs
-        │   │   └── update_api.ps1
+        │   ├── Network/
+        │   │   ├── Network.ini
+        │   │   ├── LinkSpeed.ps1
+        │   │   ├── RunLinkSpeed.vbs
+        │   │   └── linkspeed.txt
         │   │
-        │   └── @Resources/
-        │       └── api.txt
+        │   └── System/
+        │       └── System.ini
         │
-        ├── Network/
-        │   ├── Network.ini
-        │   ├── LinkSpeed.ps1
-        │   ├── RunLinkSpeed.vbs
-        │   └── linkspeed.txt
+        ├── NetworkDevices/
+        │   └── SideMeterDevices.ini
         │
-        └── System/
-            └── System.ini
+        └── ServerMonitor/
+            ├── ServerMonitor.ini
+            ├── Scripts/
+            │   ├── start_api.bat
+            │   ├── run_hidden.vbs
+            │   └── update_api.ps1
+            │
+            └── @Resources/
+                └── api.txt
 </pre>
 
 ---
@@ -219,12 +274,12 @@ Documentos/
   <li>Tkinter</li>
   <li>Rainmeter</li>
   <li>PowerShell</li>
-  <li>LUA</li>
   <li>VBScript</li>
   <li>Batch Script</li>
   <li>HTTP API</li>
-  <li>TCP Monitoring</li>
   <li>WebParser</li>
+  <li>ConfigParser</li>
+  <li>Regex</li>
 </ul>
 
 ---
@@ -233,13 +288,13 @@ Documentos/
 
 <p align="center">
 <i><img width="400" alt="image" src="https://github.com/user-attachments/assets/ae26c7b3-8a3a-4f66-94d9-d70cba3b5cb9" />
-  <img width="400" alt="image" src="https://github.com/user-attachments/assets/6eb485e3-20c4-41db-bacb-fcaa17002e08" /><br>
-  <img width="400" alt="image" src="https://github.com/user-attachments/assets/c27fc82a-d13a-42b3-b4ca-3c64ceddcff3" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/6eb485e3-20c4-41db-bacb-fcaa17002e08" /><br>
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/c27fc82a-d13a-42b3-b4ca-3c64ceddcff3" />
 </i>
 </p>
 
 ---
 
 <p align="center">
-<b>Side Meters Suite</b> reúne diferentes módulos para o Rainmeter, oferecendo monitoramento de dispositivos, servidores e automações em uma única interface de configuração.
+<b>Side Meters Suite</b> reúne diferentes módulos para o Rainmeter, oferecendo monitoramento de dispositivos, servidores e automações em uma única interface gráfica de configuração.
 </p>
