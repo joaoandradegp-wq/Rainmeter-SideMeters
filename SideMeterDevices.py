@@ -33,7 +33,7 @@ old_files = [
     os.path.join(scripts_path, "start_hidden.vbs"),
     os.path.join(scripts_path, "network.lua"),
     os.path.join(base_path, "network_status.txt"),
-    os.path.join(skin_path, "RedeMonitor.ini")
+    os.path.join(skin_path, "SideMeterDevices.ini")
 ]
 
 print("")
@@ -96,7 +96,7 @@ print("")
 
 ps_lines = []
 
-ps_lines.append('$mutex = New-Object System.Threading.Mutex($false, "RedeMonitorMutex")')
+ps_lines.append('$mutex = New-Object System.Threading.Mutex($false, "SideMeterDevicesMutex")')
 ps_lines.append('if (-not $mutex.WaitOne(0, $false)) { exit }')
 ps_lines.append('')
 
@@ -380,7 +380,7 @@ for i, (name, _) in enumerate(devices, start=1):
 # SAVE INI
 # ==========================================
 
-ini_path = os.path.join(skin_path, "RedeMonitor.ini")
+ini_path = os.path.join(skin_path, "SideMeterDevices.ini")
 
 with open(ini_path, "w", encoding="utf-8") as f:
     f.write("\n".join(ini_lines))
@@ -401,7 +401,7 @@ if os.path.exists(rainmeter_path):
 
     time.sleep(3)
 
-    os.system(f'"{rainmeter_path}" !ActivateConfig "illustro\\NetworkDevices" "RedeMonitor.ini"')
+    os.system(f'"{rainmeter_path}" !ActivateConfig "illustro\\NetworkDevices" "SideMeterDevices.ini"')
 
 # ==========================================
 # DONE
@@ -409,7 +409,7 @@ if os.path.exists(rainmeter_path):
 
 print("")
 print("====================================")
-print("✅ RedeMonitor gerado com sucesso!")
+print("✅ SideMeterDevices gerado com sucesso!")
 print("====================================")
 print("")
 

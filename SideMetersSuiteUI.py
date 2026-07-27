@@ -14,19 +14,15 @@ DIALOG_WIDTH = 420
 DIALOG_HEIGHT = 200
 
 # ==========================================
-# PATHS - ABA "REDEMONITOR" 
+# PATHS - ABA "SIDEMETERDEVICES" 
 # ==========================================
 
 INI_FILE = os.path.expanduser(r"~\Documents\Rainmeter\Scripts\devices.ini")
-EXE_NAME = "RedeMonitor.exe"
+EXE_NAME = "SideMeterDevices.exe"
 
 # ==================================================================
 # PATHS - ABA "SEVASTOLINK"
 # ==================================================================
-# Estrutura de uma skin do Rainmeter: Skins\<NomeDaSkin>\arquivo.ini
-# Por isso o ServerMonitor.ini fica dentro de Skins\ServerMonitor,
-# e não direto em Skins. 
-# Scripts e @Resources seguem a mesma raiz.
 
 SKINS_ROOT = os.path.expanduser(r"~\Documents\Rainmeter\Skins")
 SKIN_DIR = os.path.join(SKINS_ROOT, "ServerMonitor")
@@ -41,12 +37,8 @@ PS1_PATH = os.path.join(SCRIPTS_DIR, "update_api.ps1")
 RAINMETER_DOWNLOAD_URL = "https://www.rainmeter.net/"
 
 # ==================================================================
-# PATHS - ABA "RAINMETER" (LINK SPEED)
+# PATHS - NETWORK.ini
 # ==================================================================
-# Adiciona o medidor de Link Speed na skin "Network" original do
-# Rainmeter (Name=Network no Network.ini). Os scripts ficam na
-# própria pasta da skin, junto do Network.ini, pois é para lá que
-# o OnRefreshAction do arquivo aponta (#CURRENTPATH#).
 
 NETWORK_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "Network")
 NETWORK_INI_PATH = os.path.join(NETWORK_SKIN_DIR, "Network.ini")
@@ -58,16 +50,16 @@ RUNLINKSPEED_VBS_PATH = os.path.join(NETWORK_SKIN_DIR, "RunLinkSpeed.vbs")
 NETWORK_SKIN_NAME = os.path.join("illustro", "Network")
 
 # ==================================================================
-# PATHS - SYSTEM.INI (skin "illustro\System")
+# PATHS - SYSTEM.INI
 # ==================================================================
 
 SYSTEM_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "System")
 SYSTEM_INI_PATH = os.path.join(SYSTEM_SKIN_DIR, "System.ini")
 SYSTEM_SKIN_NAME = os.path.join("illustro", "System")
 
-# Campos que o ServerMonitor.ini le do api.txt (via regex nas [Measure*]).
-# Servem para validar se o endereço digitado realmente devolve o formato
-# que a skin espera antes de gravar qualquer arquivo.
+# Campos que o ServerMonitor.ini le do api.txt.
+# Servem para validar se o endereço digitado realmente devolve o formato que a skin espera antes de gravar qualquer arquivo.
+
 CAMPOS_ESPERADOS_API = [
     "CPU_USAGE",
     "CPU_TEMP",
@@ -90,11 +82,8 @@ wscript.exe "%~dp0run_hidden.vbs"
 """
 
 RUN_HIDDEN_VBS = r'''' ----------------------------------------------------
-' Abre o update_api.ps1 com zero janelas visiveis.
-' Usa WScript.Shell.Run com o parametro 0, que esconde
-' a janela por completo - diferente do "-WindowStyle
-' Hidden" do PowerShell, que o Windows Terminal as
-' vezes ignora.
+' Abre o update_api.ps1 sem janelas visiveis.
+' Usa WScript.Shell.Run com o parametro 0, que esconde a janela por completo.
 ' ----------------------------------------------------
 Set fso = CreateObject("Scripting.FileSystemObject")
 scriptFolder = fso.GetParentFolderName(WScript.ScriptFullName)
@@ -106,7 +95,7 @@ WshShell.Run command, 0, False
 '''
 
 UPDATE_API_PS1_TEMPLATE = r"""# ----------------------------------------------------
-# Antes de comecar, mata qualquer instancia anterior
+# Antes de comecar, fecha qualquer instancia anterior
 # desse mesmo script que ainda esteja rodando, entao
 # so fica UM powershell ativo por vez.
 # ----------------------------------------------------
@@ -504,22 +493,6 @@ Shape=Rectangle 0,0,700,1 | Fill Color #LineColor# | StrokeWidth 0
 X=40
 Y=270
 
-
-;=========================
-; SERVICES
-;=========================
-
-[Services]
-Meter=String
-Text="*  FILEBROWSER ONLINE      *  TAILSCALE ONLINE"
-X=390
-Y=290
-W=780
-StringAlign=Center
-FontFace=#FontName#
-FontSize=17
-FontColor=#FontColor#
-AntiAlias=1
 """
 
 # ------------------------------------------
@@ -527,13 +500,12 @@ AntiAlias=1
 # ------------------------------------------
 
 LINKSPEED_PS1_TEMPLATE = r"""# LinkSpeed.ps1
-# Obtem a velocidade da interface Ethernet fisica real (exclui adaptadores virtuais).
+# Obtem a velocidade da interface Ethernet e WIFI fisica real e exclui adaptadores virtuais.
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $outputFile = Join-Path $scriptPath "linkspeed.txt"
 
-# Palavras-chave usadas para descartar adaptadores que NAO sao placas fisicas reais,
-# mesmo que o Windows os classifique erroneamente como "fisicos".
+# Palavras-chave usadas para descartar adaptadores que NAO sao placas fisicas reais.
 $virtualKeywords = @(
     'Virtual', 'Hyper-V', 'VMware', 'VirtualBox', 'VPN', 'TAP',
     'Bluetooth', 'Loopback', 'Miniport', 'WAN Miniport', 'Tunnel',
@@ -1184,20 +1156,20 @@ root.minsize(560, 520)
 notebook = ttk.Notebook(root)
 notebook.pack(fill="both", expand=True)
 
-aba_redemonitor = ttk.Frame(notebook)
+aba_sidemeterdevices = ttk.Frame(notebook)
 aba_sevastolink = ttk.Frame(notebook)
 aba_rainmeter = ttk.Frame(notebook)
 
-notebook.add(aba_redemonitor, text="Status de Dispositivos")
+notebook.add(aba_sidemeterdevices, text="Status de Dispositivos")
 notebook.add(aba_sevastolink, text="Status do Servidor")
 notebook.add(aba_rainmeter, text="Rainmeter")
 
 
 # ==========================================
-# ABA 1 - REDEMONITOR 
+# ABA 1 - SIDEMETERDEVICES 
 # ==========================================
 
-def montar_aba_redemonitor(parent):
+def montar_aba_sidemeterdevices(parent):
 
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
@@ -1419,7 +1391,7 @@ def montar_aba_redemonitor(parent):
 
             messagebox.showerror(
                 "Erro",
-                "RedeMonitor.exe não encontrado."
+                "SideMeterDevices.exe não encontrado."
             )
 
             return
@@ -1583,8 +1555,7 @@ def montar_aba_sevastolink(parent):
                 f"{msg}\n\n"
                 "Isso normalmente significa que o endereço está errado ou "
                 "o servidor da API ainda não está no ar.\n\n"
-                "Deseja gravar os arquivos mesmo assim (por exemplo, para "
-                "deixar tudo pronto antes de o servidor ser ligado)?"
+                "Deseja gravar os arquivos mesmo assim?"
             )
 
             if not prosseguir:
@@ -1636,7 +1607,7 @@ def montar_aba_sevastolink(parent):
         messagebox.showinfo(
             "Aviso",
             "Skin SEVASTOLINK configurada.\n\n"
-            "O Rainmeter irá reiniciar (ou carregar) a skin \"ServerMonitor\" "
+            "O Rainmeter irá reiniciar a skin \"ServerMonitor\" "
             "para que a nova configuração tenha efeito."
         )
 
@@ -1662,8 +1633,7 @@ def montar_aba_sevastolink(parent):
             except OSError as e:
                 messagebox.showerror("Erro", f"Falha ao iniciar o script:\n{e}")
 
-        # Ativa/recarrega a skin no Rainmeter, igual ao comportamento do
-        # botão Atualizar da aba RedeMonitor.
+        # Ativa/recarrega a skin no Rainmeter, igual ao comportamento do botão Atualizar da aba SideMeterDevices.
         ativar_skin_rainmeter("ServerMonitor", "ServerMonitor.ini", status_var, status_label)
 
     buttons = ttk.Frame(parent, padding=10)
@@ -1695,7 +1665,7 @@ def montar_aba_rainmeter(parent):
 
 
 # ------------------------------------------------------------
-# SUB-ABA - LINK SPEED (skin "illustro\Network")
+# SUB-ABA - NETWORK.ini
 # ------------------------------------------------------------
 
 def montar_subaba_network(parent):
@@ -1856,7 +1826,7 @@ def montar_subaba_network(parent):
 
 
 # ------------------------------------------------------------
-# SUB-ABA - SYSTEM.INI (skin "illustro\System")
+# SUB-ABA - SYSTEM.INI
 # ------------------------------------------------------------
 
 def montar_subaba_system(parent):
@@ -2000,7 +1970,7 @@ def montar_subaba_system(parent):
     verificar_status_sistema()
 
 
-montar_aba_redemonitor(aba_redemonitor)
+montar_aba_sidemeterdevices(aba_sidemeterdevices)
 montar_aba_sevastolink(aba_sevastolink)
 montar_aba_rainmeter(aba_rainmeter)
 
