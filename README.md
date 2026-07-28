@@ -296,5 +296,5 @@ Documentos/
 ---
 
 <p align="center">
-<b>Side Meters Suite</b> reúne diferentes módulos para o Rainmeter, oferecendo monitoramento de dispositivos, servidores e automações em uma única interface gráfica de configuração.
+<b>Side Meters Suite</b> reúne diferentes módulos para o Rainmeter, oferecendo monitoramento de dispositivos, servidores e automações em uma única interface gráfica de configuração. 🤖
 </p>
