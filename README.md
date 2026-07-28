@@ -33,10 +33,10 @@ Na versão atual, a aplicação também é responsável por configurar automatic
 <h2>🧩 Módulos atuais</h2>
 
 <ul>
-  <li>🌐 <b>SideMeterDevices</b> — Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
-  <li>🖥 <b>SEVASTOLINK</b> — Dashboard inspirado nos computadores da Sevastopol (Alien: Isolation)</li>
-  <li>🌐 Link Speed (Atualização automática do widget Network)</li>
-  <li>💾 System Update (Atualização do widget System)</li>
+  <li>🌐 <b>SideMeterDevices</b> - Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
+  <li>🖥 <b>SEVASTOLINK</b> - Dashboard inspirado nos computadores da Sevastopol (Alien: Isolation)</li>
+  <li>🌐 Link Speed - Velocidade do Link Ethernet/Wi-fi com o Roteador</li>
+  <li>💾 System CPU/RAM Update - Porcentagem e Disponibilidade da Memória RAM</li>
 </ul>
 
 ---
