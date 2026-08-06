@@ -287,8 +287,10 @@ Documentos/
 ## 📸 Preview
 
 <p align="center">
-<i><img width="400" alt="image" src="https://github.com/user-attachments/assets/ae26c7b3-8a3a-4f66-94d9-d70cba3b5cb9" />
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/6eb485e3-20c4-41db-bacb-fcaa17002e08" /><br>
+<i><img width="400" alt="image" src="https://github.com/user-attachments/assets/3ca2eba1-af71-4209-9ccf-168e88a20183" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/6966f911-a1d6-489f-a6bc-c8f7e37780ae" />
+<br>
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/5ed51242-ee99-4e84-bb29-5262ac9163a0" />
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/c27fc82a-d13a-42b3-b4ca-3c64ceddcff3" />
 </i>
 </p>
