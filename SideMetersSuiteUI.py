@@ -21,7 +21,7 @@ INI_FILE = os.path.expanduser(r"~\Documents\Rainmeter\Scripts\devices.ini")
 EXE_NAME = "SideMeterDevices.exe"
 
 # ==================================================================
-# PATHS - ABA "SEVASTOLINK"
+# PATHS - ABA "API Monitor"
 # ==================================================================
 
 SKINS_ROOT = os.path.expanduser(r"~\Documents\Rainmeter\Skins")
@@ -1157,11 +1157,11 @@ notebook = ttk.Notebook(root)
 notebook.pack(fill="both", expand=True)
 
 aba_sidemeterdevices = ttk.Frame(notebook)
-aba_sevastolink = ttk.Frame(notebook)
+aba_apimonitor = ttk.Frame(notebook)
 aba_rainmeter = ttk.Frame(notebook)
 
 notebook.add(aba_sidemeterdevices, text="Status de Dispositivos")
-notebook.add(aba_sevastolink, text="Status do Servidor")
+notebook.add(aba_apimonitor, text="Status do Servidor")
 notebook.add(aba_rainmeter, text="Rainmeter")
 
 
@@ -1410,10 +1410,10 @@ def montar_aba_sidemeterdevices(parent):
 
 
 # ==========================================
-# ABA 2 - SEVASTOLINK 
+# ABA 2 - API MONITOR 
 # ==========================================
 
-def montar_aba_sevastolink(parent):
+def montar_aba_apimonitor(parent):
 
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
@@ -1423,7 +1423,7 @@ def montar_aba_sevastolink(parent):
 
     subtitle = ttk.Label(
         header,
-        text="Configura a skin SEVASTOLINK no Rainmeter, através dos dados disponibilizados pelo Servidor."
+        text="Configura uma skin CRT TERMINAL no Rainmeter, através dos dados disponibilizados pelo Servidor."
     )
     subtitle.pack(anchor="w")
 
@@ -1466,7 +1466,7 @@ def montar_aba_sevastolink(parent):
         RAM_PERCENT= etc). Retorna (ok, mensagem, campos_faltando).
         """
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Sevastolink/1.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "monitor/1.0"})
 
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 corpo = resp.read().decode("utf-8", errors="replace")
@@ -1606,7 +1606,7 @@ def montar_aba_sevastolink(parent):
 
         messagebox.showinfo(
             "Aviso",
-            "Skin SEVASTOLINK configurada.\n\n"
+            "Skin CRT TERMINAL configurada.\n\n"
             "O Rainmeter irá reiniciar a skin \"ServerMonitor\" "
             "para que a nova configuração tenha efeito."
         )
@@ -1971,7 +1971,7 @@ def montar_subaba_system(parent):
 
 
 montar_aba_sidemeterdevices(aba_sidemeterdevices)
-montar_aba_sevastolink(aba_sevastolink)
+montar_aba_apimonitor(aba_apimonitor)
 montar_aba_rainmeter(aba_rainmeter)
 
 # ==========================================
