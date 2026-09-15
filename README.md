@@ -34,7 +34,7 @@ Na versão atual, a aplicação também é responsável por configurar automatic
 
 <ul>
   <li>🌐 <b>SideMeterDevices</b> - Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
-  <li>🖥 <b>SEVASTOLINK</b> - Dashboard inspirado nos computadores da Sevastopol (Alien: Isolation)</li>
+  <li>🖥 <b>CRT TERMINAL</b> - Dashboard inspirado em computadores estilo terminal mainframe</li>
   <li>🌐 Link Speed - Velocidade do Link Ethernet/Wi-fi com o Roteador</li>
   <li>💾 System CPU/RAM Update - Porcentagem e Disponibilidade da Memória RAM</li>
 </ul>
@@ -77,10 +77,10 @@ Cada dispositivo pode ser monitorado utilizando endereço IP, Hostname da rede l
 
 ---
 
-<h2>🖥 SEVASTOLINK</h2>
+<h2>🖥 CRT Terminal</h2>
 
 <p>
-O <b>SEVASTOLINK</b> é uma skin inspirada nos computadores da estação espacial <b>Sevastopol</b>, do universo de <b>Alien: Isolation</b>.
+O <b>CRT Terminal</b> é uma skin inspirada em computadores do tipo <b>Terminal Mainframe</b></b>.
 </p>
 
 <p>
@@ -155,7 +155,7 @@ A aplicação possui três áreas principais:
 
 <ul>
   <li>🌐 Status de Dispositivos (SideMeterDevices)</li>
-  <li>🖥 Status do Servidor (SEVASTOLINK)</li>
+  <li>🖥 Status do Servidor (CRT Terminal)</li>
   <li>⚙️ Rainmeter
       <ul>
          <li>Network (Link Speed)</li>
@@ -210,7 +210,7 @@ Durante a atualização o sistema pode:
         ┌─────────────────┼──────────────────────┐
         │                 │                      │
         ▼                 ▼                      ▼
- SideMeterDevices    SEVASTOLINK         Rainmeter Tools
+ SideMeterDevices    CRT Terminal         Rainmeter Tools
         │                 │                      │
    devices.ini      update_api.ps1        Network.ini
         │                 │               System.ini
