@@ -291,7 +291,6 @@ Documentos/
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/6966f911-a1d6-489f-a6bc-c8f7e37780ae" />
 <br>
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/5ed51242-ee99-4e84-bb29-5262ac9163a0" />
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/c27fc82a-d13a-42b3-b4ca-3c64ceddcff3" />
 </i>
 </p>
 
