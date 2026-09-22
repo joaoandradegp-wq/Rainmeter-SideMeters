@@ -115,10 +115,6 @@ for i, (_, ip) in enumerate(devices, start=1):
 
     else:
 
-        # Test-Connection às vezes falha em resolver nome de PC puro
-        # (NetBIOS) mesmo com o dispositivo online. Como fallback, se o
-        # teste direto falhar, tenta resolver o nome via .NET e pinga
-        # o IP resolvido antes de considerar OFFLINE.
         ps_lines.append(f'    $pc{i} = "OFFLINE"')
         ps_lines.append(f'    if (Test-Connection "{ip}" -Count 1 -Quiet -ErrorAction SilentlyContinue) {{')
         ps_lines.append(f'        $pc{i} = "ONLINE"')
