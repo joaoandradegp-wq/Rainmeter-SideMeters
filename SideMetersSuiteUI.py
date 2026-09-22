@@ -45,8 +45,6 @@ NETWORK_INI_PATH = os.path.join(NETWORK_SKIN_DIR, "Network.ini")
 LINKSPEED_PS1_PATH = os.path.join(NETWORK_SKIN_DIR, "LinkSpeed.ps1")
 RUNLINKSPEED_VBS_PATH = os.path.join(NETWORK_SKIN_DIR, "RunLinkSpeed.vbs")
 
-# Nome da config para o bang !ActivateConfig do Rainmeter, que espera o
-# caminho relativo à pasta Skins (ex.: "illustro\Network").
 NETWORK_SKIN_NAME = os.path.join("illustro", "Network")
 
 # ==================================================================
@@ -56,9 +54,6 @@ NETWORK_SKIN_NAME = os.path.join("illustro", "Network")
 SYSTEM_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "System")
 SYSTEM_INI_PATH = os.path.join(SYSTEM_SKIN_DIR, "System.ini")
 SYSTEM_SKIN_NAME = os.path.join("illustro", "System")
-
-# Campos que o ServerMonitor.ini le do api.txt.
-# Servem para validar se o endereço digitado realmente devolve o formato que a skin espera antes de gravar qualquer arquivo.
 
 CAMPOS_ESPERADOS_API = [
     "CPU_USAGE",
@@ -1059,12 +1054,8 @@ H=1
 # ==========================================
 # HELPERS - ATIVAÇÃO DE SKINS NO RAINMETER
 # ==========================================
-# Compartilhados entre as abas "Status do Servidor" e "Rainmeter",
-# já que ambas precisam localizar o Rainmeter.exe, garantir que ele
-# esteja aberto e mandar o !ActivateConfig da skin correspondente.
 
 def localizar_rainmeter():
-    # Caminhos padrão onde o instalador do Rainmeter costuma colocar o exe.
     candidatos = [
         os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Rainmeter", "Rainmeter.exe"),
         os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Rainmeter", "Rainmeter.exe"),
@@ -1089,22 +1080,11 @@ def rainmeter_esta_rodando():
         return "Rainmeter.exe" in resultado.stdout
 
     except (OSError, subprocess.TimeoutExpired):
-        # Se não der para checar, segue o fluxo normal e deixa o
-        # !ActivateConfig tentar mesmo assim.
         return True
 
 
 def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label=None):
-    """
-    Ativa/atualiza uma skin no Rainmeter via linha de comando (bang
-    !ActivateConfig), que carrega a skin se ela ainda não estiver
-    ativa, ou recarrega se já estiver - equivalente a clicar em
-    "Atualizar" na skin pelo próprio Rainmeter.
 
-    Antes disso, confere se o Rainmeter está instalado (senão abre o
-    site oficial para download) e se está aberto (senão abre o
-    programa e aguarda antes de mandar o comando).
-    """
     rainmeter_exe = localizar_rainmeter()
 
     if not rainmeter_exe:
@@ -1131,7 +1111,6 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
             status_var.set("Abrindo o Rainmeter...")
             root.update_idletasks()
 
-        # dá tempo do Rainmeter terminar de iniciar antes de mandar o bang
         time.sleep(3)
 
     try:
@@ -1455,16 +1434,10 @@ def montar_aba_apimonitor(parent):
     status_label.pack(anchor="w")
 
     def montar_url(endereco_bruto):
-        # remove protocolo e barra final, caso o usuário tenha digitado
         endereco = re.sub(r'^https?://', '', endereco_bruto.strip()).rstrip('/')
         return endereco, f"http://{endereco}/api/rainmeter"
 
     def testar_conexao(url, timeout=5):
-        """
-        Busca a URL informada e confere se o conteúdo devolvido tem o
-        formato CHAVE=VALOR que o ServerMonitor.ini espera (CPU_USAGE=,
-        RAM_PERCENT= etc). Retorna (ok, mensagem, campos_faltando).
-        """
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "monitor/1.0"})
 
@@ -1514,8 +1487,7 @@ def montar_aba_apimonitor(parent):
         status_var.set(msg)
 
     def carregar_endereco_atual():
-        # Se já existir um update_api.ps1 gerado antes, recupera o endereço
-        # atual para preencher o campo (extrai host:porta da URL salva).
+
         if not os.path.exists(PS1_PATH):
             return
 
@@ -1620,9 +1592,6 @@ def montar_aba_apimonitor(parent):
         if not gerado:
             return
 
-        # Dispara o start_api.bat para iniciar (ou reiniciar) a coleta de
-        # dados em segundo plano, do mesmo jeito que o Rainmeter faria
-        # via OnRefreshAction ao carregar a skin.
         if os.path.exists(BAT_PATH):
             try:
                 subprocess.Popen(
@@ -1633,7 +1602,6 @@ def montar_aba_apimonitor(parent):
             except OSError as e:
                 messagebox.showerror("Erro", f"Falha ao iniciar o script:\n{e}")
 
-        # Ativa/recarrega a skin no Rainmeter, igual ao comportamento do botão Atualizar da aba SideMeterDevices.
         ativar_skin_rainmeter("ServerMonitor", "ServerMonitor.ini", status_var, status_label)
 
     buttons = ttk.Frame(parent, padding=10)
