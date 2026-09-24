@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-Coleção de widgets, skins e automações desenvolvidas para o Rainmeter, focadas em monitoramento de dispositivos, servidores e integração com sistemas externos.
+Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em monitoramento de dispositivos, servidores e integração com sistemas externos.
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@ Coleção de widgets, skins e automações desenvolvidas para o Rainmeter, focad
 <h2>📌 Sobre</h2>
 
 <p>
-O <b>Side Meters Suite</b> é uma suíte de widgets, skins e ferramentas para o <b>Rainmeter</b>, criada para automatizar monitoramentos e fornecer painéis inspirados em interfaces clássicas de ficção científica.
+O <b>Side Meters Suite</b> é uma suíte de widgets e ferramentas para o <b>Rainmeter</b>, criada para automatizar monitoramentos e fornecer painéis inspirados em interfaces clássicas.
 </p>
 
 <p>
@@ -27,7 +27,7 @@ Cada módulo possui backend próprio, integração automática com o Rainmeter e
 </p>
 
 <p>
-Na versão atual, a aplicação também é responsável por configurar automaticamente diversas skins do Rainmeter, validar integrações com APIs, gerar scripts auxiliares e atualizar widgets oficiais do Rainmeter sem necessidade de qualquer configuração manual.
+Na versão atual, a aplicação também é responsável por configurar automaticamente uma skin do Rainmeter, validar integrações com APIs, gerar scripts auxiliares e atualizar widgets oficiais do Rainmeter sem necessidade de qualquer configuração manual.
 </p>
 
 ---
@@ -36,7 +36,7 @@ Na versão atual, a aplicação também é responsável por configurar automatic
 
 <ul>
   <li>🌐 <b>SideMeterDevices</b> - Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
-  <li>🖥 <b>CRT TERMINAL</b> - Dashboard inspirado em computadores estilo terminal mainframe</li>
+  <li>🖥 <b>CRT Terminal</b> - Dashboard inspirado em computadores estilo terminal</li>
   <li>🌐 Link Speed - Velocidade do Link Ethernet/Wi-fi com o Roteador</li>
   <li>💾 System CPU/RAM Update - Porcentagem e Disponibilidade da Memória RAM</li>
 </ul>
