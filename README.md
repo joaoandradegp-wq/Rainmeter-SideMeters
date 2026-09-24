@@ -1,4 +1,6 @@
-<h1 align="center">☁️ Side Meters Suite</h1>
+<h1 align="center">
+ <img width="500" alt="Rainmeter_Extensions_cropped" src="https://github.com/user-attachments/assets/7b0883f7-9c7e-4761-8d64-738258db9d76" />
+</h1>
 
 <p align="center">
 Coleção de widgets, skins e automações desenvolvidas para o Rainmeter, focadas em monitoramento de dispositivos, servidores e integração com sistemas externos.
@@ -92,7 +94,6 @@ Antes de gerar qualquer configuração, o Side Meters Suite valida automaticamen
 </p>
 
 <ul>
-  <li>🖥 Layout inspirado na Sevastopol</li>
   <li>📡 Integração com API HTTP</li>
   <li>🌡 Monitoramento de CPU</li>
   <li>💾 Monitoramento de Memória</li>
@@ -100,9 +101,6 @@ Antes de gerar qualquer configuração, o Side Meters Suite valida automaticamen
   <li>🌐 Rede</li>
   <li>📥 Download</li>
   <li>📤 Upload</li>
-  <li>✔ Teste automático da API</li>
-  <li>⚡ Atualização automática</li>
-  <li>🔄 Recarregamento automático da skin</li>
 </ul>
 
 ---
@@ -121,8 +119,6 @@ O módulo identifica automaticamente conexões Ethernet e Wi-Fi, criando todos o
   <li>⚡ Link Speed em tempo real</li>
   <li>🌐 Compatível com Ethernet</li>
   <li>📶 Compatível com Wi-Fi</li>
-  <li>📄 Geração automática dos scripts</li>
-  <li>🔄 Atualização automática do widget</li>
 </ul>
 
 ---
@@ -138,7 +134,6 @@ Atualiza automaticamente o widget oficial <b>System</b> do Rainmeter, substituin
   <li>💾 Utilização de Memória RAM</li>
   <li>📊 Memória Total</li>
   <li>📉 Memória Disponível</li>
-  <li>⚡ Atualização automática do widget</li>
 </ul>
 
 ---
@@ -199,27 +194,6 @@ Durante a atualização o sistema pode:
   <li>Recarregar as skins</li>
   <li>Atualizar widgets oficiais</li>
 </ul>
-
----
-
-<h2>🧩 Arquitetura</h2>
-
-<pre>
-                 Side Meters Suite.exe
-                          │
-        ┌─────────────────┼──────────────────────┐
-        │                 │                      │
-        ▼                 ▼                      ▼
- SideMeterDevices    CRT Terminal         Rainmeter Tools
-        │                 │                      │
-   devices.ini      update_api.ps1        Network.ini
-        │                 │               System.ini
-check_network.ps1      api.txt            LinkSpeed.ps1
-        │                 │                      │   
-network_status.txt  ServerMonitor.ini            │
-        │                 │                      │
-        └──────────────► Rainmeter ◄─────────────┘
-</pre>
 
 ---
 
