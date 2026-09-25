@@ -1,5 +1,5 @@
 <h1 align="center">
- <img width="500" alt="Rainmeter_Extensions_cropped" src="https://github.com/user-attachments/assets/7b0883f7-9c7e-4761-8d64-738258db9d76" />
+ <img width="500" alt="image" src="https://github.com/user-attachments/assets/87e1d3ab-e046-48de-bf6b-3c54d198f4d4" />
 </h1>
 
 <p align="center">
