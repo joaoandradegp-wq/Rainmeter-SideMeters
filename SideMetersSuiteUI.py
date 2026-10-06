@@ -580,7 +580,7 @@ License=Creative Commons BY-NC-SA 3.0
 Version=2.0
 
 [Variables]
-fontName=Trebuchet MS
+fontName=Segoe UI
 textSize=8
 colorBar=235,170,0,255
 colorText=255,255,255,205
@@ -635,8 +635,7 @@ DynamicVariables=1
 StringAlign=Center
 StringCase=Upper
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,50
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=10
@@ -647,8 +646,7 @@ ClipString=1
 StringAlign=Left
 StringCase=None
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,20
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=#textSize#
@@ -659,8 +657,7 @@ ClipString=1
 StringAlign=Right
 StringCase=None
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,20
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=#textSize#
@@ -715,7 +712,7 @@ Text=%1
 Meter=Image
 MeterStyle=styleSeperator
 X=10
-Y=52
+Y=55
 W=190
 H=1
 
@@ -749,7 +746,7 @@ Meter=Bar
 MeterStyle=styleBar
 MeasureName=measureNetOut
 X=10
-Y=72
+Y=75
 W=190
 H=1
 
@@ -783,7 +780,7 @@ Meter=Bar
 MeterStyle=styleBar
 MeasureName=measureNetIn
 X=10
-Y=92
+Y=95
 W=190
 H=1
 
@@ -814,7 +811,7 @@ Text=%1
 Meter=Image
 MeterStyle=styleSeperator
 X=10
-Y=112
+Y=115
 W=190
 H=1
 """
@@ -836,10 +833,21 @@ Information=Displays system information.
 Version=2.0
 
 [Variables]
-fontName=Trebuchet MS
+fontName=Segoe UI
 textSize=8
 colorBar=235,170,0,255
 colorText=255,255,255,205
+
+; Cores das temperaturas
+colorGood=90,200,90,255
+colorWarn=235,200,0,255
+colorHot=230,60,60,255
+
+; Limites (em °C): abaixo de Warn = verde, entre Warn e Hot = amarelo, a partir de Hot = vermelho
+cpuWarn=60
+cpuHot=75
+gpuWarn=65
+gpuHot=80
 
 ;------------------------------------------------
 ; SYSTEM MEASURES
@@ -878,6 +886,69 @@ Measure=Calc
 Formula=((measureRAMTotal-measureRAM)/1024/1024/1024)
 DynamicVariables=1
 
+[measureCPUWeb]
+Measure=WebParser
+URL=http://localhost:8085/data.json
+UpdateRate=2
+RegExp=(?s)"Text":"CPU Package"[^}]*?"Value":"(\d+)[^"]*C"
+
+[measureCPUTemp]
+Measure=WebParser
+URL=[measureCPUWeb]
+StringIndex=1
+IfConditionMode=1
+IfCondition=(measureCPUTemp < 1)
+IfTrueAction=[!SetOption meterValueCPUTemp FontColor "#colorText#"][!UpdateMeter meterValueCPUTemp][!Redraw]
+IfCondition2=(measureCPUTemp >= 1) && (measureCPUTemp < #cpuWarn#)
+IfTrueAction2=[!SetOption meterValueCPUTemp FontColor "#colorGood#"][!UpdateMeter meterValueCPUTemp][!Redraw]
+IfCondition3=(measureCPUTemp >= #cpuWarn#) && (measureCPUTemp < #cpuHot#)
+IfTrueAction3=[!SetOption meterValueCPUTemp FontColor "#colorWarn#"][!UpdateMeter meterValueCPUTemp][!Redraw]
+IfCondition4=(measureCPUTemp >= #cpuHot#)
+IfTrueAction4=[!SetOption meterValueCPUTemp FontColor "#colorHot#"][!UpdateMeter meterValueCPUTemp][!Redraw]
+
+[measureCPUNameWeb]
+Measure=WebParser
+URL=http://localhost:8085/data.json
+UpdateRate=60
+RegExp=(?s)"Text":"([^"]+)"[^}]*?"HardwareId":"/(?:intel|amd)cpu/[^"]*"
+
+[measureCPUName]
+Measure=WebParser
+URL=[measureCPUNameWeb]
+StringIndex=1
+
+[measureGPUWeb]
+Measure=WebParser
+URL=http://localhost:8085/data.json
+UpdateRate=2
+RegExp=(?s)"Text":"GPU Core"[^}]*?"Value":"(\d+)[^"]*C"
+
+[measureGPUTemp]
+Measure=WebParser
+URL=[measureGPUWeb]
+StringIndex=1
+IfConditionMode=1
+IfCondition=(measureGPUTemp < 1)
+IfTrueAction=[!SetOption meterValueGPUTemp FontColor "#colorText#"][!UpdateMeter meterValueGPUTemp][!Redraw]
+IfCondition2=(measureGPUTemp >= 1) && (measureGPUTemp < #gpuWarn#)
+IfTrueAction2=[!SetOption meterValueGPUTemp FontColor "#colorGood#"][!UpdateMeter meterValueGPUTemp][!Redraw]
+IfCondition3=(measureGPUTemp >= #gpuWarn#) && (measureGPUTemp < #gpuHot#)
+IfTrueAction3=[!SetOption meterValueGPUTemp FontColor "#colorWarn#"][!UpdateMeter meterValueGPUTemp][!Redraw]
+IfCondition4=(measureGPUTemp >= #gpuHot#)
+IfTrueAction4=[!SetOption meterValueGPUTemp FontColor "#colorHot#"][!UpdateMeter meterValueGPUTemp][!Redraw]
+
+[measureGPUNameWeb]
+Measure=WebParser
+URL=http://localhost:8085/data.json
+UpdateRate=60
+RegExp=(?s)"Text":"([^"]+)"[^}]*?"HardwareId":"/gpu-[^"]*"
+
+[measureGPUName]
+Measure=WebParser
+URL=[measureGPUNameWeb]
+StringIndex=1
+Substitute="NVIDIA GeForce ":""
+
 ;------------------------------------------------
 ; STYLES
 ;------------------------------------------------
@@ -886,8 +957,7 @@ DynamicVariables=1
 StringAlign=Center
 StringCase=Upper
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,50
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=10
@@ -897,8 +967,7 @@ ClipString=1
 [styleLeftText]
 StringAlign=Left
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,20
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=#textSize#
@@ -908,8 +977,7 @@ ClipString=1
 [styleRightText]
 StringAlign=Right
 StringStyle=Bold
-StringEffect=Shadow
-FontEffectColor=0,0,0,20
+StringEffect=None
 FontColor=#colorText#
 FontFace=#fontName#
 FontSize=#textSize#
@@ -940,6 +1008,31 @@ LeftMouseUpAction=["taskmgr.exe"]
 ToolTipText=Open Task Manager
 
 ;------------------------------------------------
+; CPU TEMPERATURE
+;------------------------------------------------
+
+[meterLabelCPUTemp]
+Meter=String
+MeterStyle=styleLeftText
+MeasureName=measureCPUName
+X=10
+Y=40
+W=190
+H=14
+Text=%1
+
+[meterValueCPUTemp]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureCPUTemp
+X=200
+Y=0r
+W=190
+H=14
+NumOfDecimals=0
+Text=%1°C
+
+;------------------------------------------------
 ; CPU
 ;------------------------------------------------
 
@@ -947,7 +1040,7 @@ ToolTipText=Open Task Manager
 Meter=String
 MeterStyle=styleLeftText
 X=10
-Y=40
+Y=60
 W=190
 H=14
 Text=CPU Usage
@@ -967,7 +1060,7 @@ Meter=Bar
 MeterStyle=styleBar
 MeasureName=measureCPU
 X=10
-Y=52
+Y=75
 W=190
 H=1
 
@@ -979,7 +1072,7 @@ H=1
 Meter=String
 MeterStyle=styleLeftText
 X=10
-Y=60
+Y=80
 W=190
 H=14
 Text=RAM
@@ -1000,7 +1093,7 @@ Meter=Bar
 MeterStyle=styleBar
 MeasureName=measureRAM
 X=10
-Y=72
+Y=95
 W=190
 H=1
 
@@ -1012,10 +1105,10 @@ H=1
 Meter=String
 MeterStyle=styleLeftText
 X=10
-Y=80
+Y=100
 W=190
 H=14
-Text=Available
+Text=RAM Available
 
 [meterValueFree]
 Meter=String
@@ -1034,9 +1127,33 @@ MeterStyle=styleBar
 MeasureName=measureRAM
 InvertMeasure=1
 X=10
-Y=92
+Y=115
 W=190
 H=1
+
+;------------------------------------------------
+; GPU TEMPERATURE
+;------------------------------------------------
+
+[meterLabelGPUTemp]
+Meter=String
+MeterStyle=styleLeftText
+MeasureName=measureGPUName
+X=10
+Y=120
+W=190
+H=14
+Text=%1
+
+[meterValueGPUTemp]
+Meter=String
+MeterStyle=styleRightText
+MeasureName=measureGPUTemp
+X=200
+Y=0r
+W=190
+H=14
+Text=%1°C
 
 ;------------------------------------------------
 ; BOTTOM SEPARATOR
@@ -1046,7 +1163,7 @@ H=1
 Meter=Image
 MeterStyle=styleSeparator
 X=10
-Y=97
+Y=137
 W=190
 H=1
 """
@@ -1054,6 +1171,22 @@ H=1
 # ==========================================
 # HELPERS - ATIVAÇÃO DE SKINS NO RAINMETER
 # ==========================================
+
+def ler_texto(caminho):
+    with open(caminho, "rb") as f:
+        dados = f.read()
+
+    if dados.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return dados.decode("utf-16")
+
+    if dados.startswith(b"\xef\xbb\xbf"):
+        return dados.decode("utf-8-sig")
+
+    try:
+        return dados.decode("utf-8")
+    except UnicodeDecodeError:
+        return dados.decode("cp1252", errors="replace")
+
 
 def localizar_rainmeter():
     candidatos = [
@@ -1128,7 +1261,7 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
 
 root = tk.Tk()
 
-root.title("Side Meters Suite 1.4 - phobosfreeware.blogspot.com")
+root.title("Side Meters Suite 1.5 - phobosfreeware.blogspot.com")
 root.geometry("560x520")
 root.minsize(560, 520)
 
@@ -1822,7 +1955,11 @@ def montar_subaba_system(parent):
 
     info_sistema = ttk.Label(
         form_sistema,
-        text=f"Arquivo:\n  {SYSTEM_INI_PATH}",
+        text=(
+            f"Arquivo:\n  {SYSTEM_INI_PATH}\n\n"
+            "Temperaturas: requer o LibreHardwareMonitor aberto com o "
+            "Remote Web Server ligado (porta 8085)."
+        ),
         foreground="#555555",
         justify="left"
     )
@@ -1838,13 +1975,12 @@ def montar_subaba_system(parent):
             return False
 
         try:
-            with open(SYSTEM_INI_PATH, "r", encoding="utf-8") as f:
-                conteudo = f.read()
+            conteudo = ler_texto(SYSTEM_INI_PATH)
 
         except OSError:
             return False
 
-        return "measureRAMTotalGB" in conteudo
+        return "measureGPUTemp" in conteudo
 
     def verificar_status_sistema():
 
@@ -1892,7 +2028,9 @@ def montar_subaba_system(parent):
         prosseguir = messagebox.askyesno(
             "Aplicar System.ini",
             "Isso vai sobrescrever o System.ini atual pela versão configurada "
-            "(CPU, RAM, total e disponível em GB).\n\n"
+            "(CPU, RAM, disponível em GB e temperaturas de CPU/GPU).\n\n"
+            "Para as temperaturas, o LibreHardwareMonitor precisa estar aberto "
+            "com o Remote Web Server ligado (porta 8085).\n\n"
             "Deseja continuar?"
         )
 
@@ -1902,7 +2040,7 @@ def montar_subaba_system(parent):
         try:
             os.makedirs(SYSTEM_SKIN_DIR, exist_ok=True)
 
-            with open(SYSTEM_INI_PATH, "w", encoding="utf-8") as f:
+            with open(SYSTEM_INI_PATH, "w", encoding="utf-16") as f:
                 f.write(SYSTEM_INI_TEMPLATE)
 
         except OSError as e:

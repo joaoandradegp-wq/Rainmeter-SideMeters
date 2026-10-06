@@ -292,7 +292,7 @@ ini_lines.extend([
 
 ini_lines.extend([
     "[Variables]",
-    "fontName=Trebuchet MS",
+    "fontName=Segoe UI",
     "textSize=8",
     "colorText=255,255,255,205",
     ""
@@ -321,6 +321,7 @@ ini_lines.extend([
 ini_lines.extend([
     "[styleLeftText]",
     "StringAlign=Left",
+    "StringStyle=Bold",
     "FontColor=#colorText#",
     "FontFace=#fontName#",
     "FontSize=#textSize#",
@@ -331,6 +332,7 @@ ini_lines.extend([
 ini_lines.extend([
     "[styleRightText]",
     "StringAlign=Right",
+    "StringStyle=Bold",
     "FontFace=#fontName#",
     "FontSize=#textSize#",
     "AntiAlias=1",
