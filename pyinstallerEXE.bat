@@ -1,2 +1,2 @@
-pyinstaller --onefile --noconsole --icon=01.ico SideMetersSuiteUI.py
-pyinstaller --onefile --noconsole --icon=02.ico SideMeterDevices.py
+pyinstaller --onefile --noconsole --icon=SideMetersSuiteUI.ico SideMetersSuiteUI.py
+pyinstaller --onefile --noconsole --icon=SideMeterDevices.ico SideMeterDevices.py

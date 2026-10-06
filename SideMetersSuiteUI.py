@@ -1253,6 +1253,7 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
 
     try:
         subprocess.Popen([rainmeter_exe, "!ActivateConfig", skin_name, ini_filename])
+        subprocess.Popen([rainmeter_exe, "!Refresh", skin_name])
         return True
 
     except OSError as e:
@@ -1267,23 +1268,33 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
 LHM_WINGET_ID = "LibreHardwareMonitor.LibreHardwareMonitor"
 LHM_URL = "http://localhost:8085/data.json"
 
+ATUALIZADORES_UI = []
+
 
 def localizar_lhm():
-    exe = shutil.which("LibreHardwareMonitor")
+    candidatos = []
 
-    if exe and os.path.exists(exe):
-        return exe
+    local = os.environ.get("LOCALAPPDATA", "")
 
-    bases = [
-        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Packages"),
-        os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "LibreHardwareMonitor"),
-        os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "WinGet", "Packages"),
-    ]
+    if local:
+        candidatos += glob.glob(os.path.join(
+            glob.escape(local), "Microsoft", "WinGet", "Packages",
+            "LibreHardwareMonitor.LibreHardwareMonitor_*", "LibreHardwareMonitor.exe"
+        ))
 
-    for base in bases:
-        padrao = os.path.join(glob.escape(base), "**", "LibreHardwareMonitor.exe")
+    for var in ("ProgramFiles", "ProgramFiles(x86)"):
+        base = os.environ.get(var)
 
-        for caminho in glob.glob(padrao, recursive=True):
+        if base:
+            candidatos.append(os.path.join(base, "LibreHardwareMonitor", "LibreHardwareMonitor.exe"))
+
+    alias = shutil.which("LibreHardwareMonitor")
+
+    if alias:
+        candidatos.append(os.path.realpath(alias))
+
+    for caminho in candidatos:
+        if os.path.exists(caminho):
             return caminho
 
     return None
@@ -1314,8 +1325,9 @@ def lhm_servidor_ativo():
 
 
 def habilitar_webserver_lhm(exe):
-    """Liga o Remote Web Server (porta 8085) e o modo minimizado no config
-    do LibreHardwareMonitor. Só vale se o programa estiver fechado."""
+    """Liga o Remote Web Server (porta 8085) no config do LibreHardwareMonitor
+    e ativa Start Minimized, Minimize To Tray e Minimize On Close.
+    Só vale com o programa fechado (ele sobrescreve o config ao sair)."""
 
     config_path = os.path.join(os.path.dirname(exe), "LibreHardwareMonitor.config")
 
@@ -1335,8 +1347,9 @@ def habilitar_webserver_lhm(exe):
     valores = {
         "runWebServerMenuItem": "true",
         "listenerPort": "8085",
-        "startMinMenuItem": "true",
-        "minTrayMenuItem": "true",
+        "startMinMenuItem": "true",    # Start Minimized
+        "minTrayMenuItem": "true",     # Minimize To Tray
+        "minCloseMenuItem": "true",    # Minimize On Close
     }
 
     for chave, valor in valores.items():
@@ -1348,6 +1361,22 @@ def habilitar_webserver_lhm(exe):
             ET.SubElement(app_settings, "add", {"key": chave, "value": valor})
 
     arvore.write(config_path, encoding="utf-8", xml_declaration=True)
+
+
+LHM_TASK_NAME = "Libre Hardware Monitor"
+
+
+def registrar_lhm_na_inicializacao(exe):
+    """Run On Windows Startup: cria tarefa agendada que abre o LHM como
+    administrador no logon (o LHM precisa de admin para ler os sensores)."""
+    params = (
+        f'/Create /TN "{LHM_TASK_NAME}" '
+        f'/TR "\\"{exe}\\"" /SC ONLOGON /RL HIGHEST /F'
+    )
+    resultado = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", "schtasks", params, None, 0
+    )
+    return resultado > 32
 
 
 def abrir_lhm_como_admin(exe):
@@ -1364,8 +1393,14 @@ def abrir_lhm_como_admin(exe):
 root = tk.Tk()
 
 root.title("Side Meters Suite 1.5 - phobosfreeware.blogspot.com")
-root.geometry("560x420")
-root.minsize(560, 420)
+root.geometry("560x455")
+root.minsize(560, 455)
+
+barra_inferior = ttk.Frame(root, padding=(8, 4))
+barra_inferior.pack(side="bottom", fill="x")
+
+botao_reset = ttk.Button(barra_inferior, text="Reset", command=lambda: resetar_tudo())
+botao_reset.pack(side="right")
 
 notebook = ttk.Notebook(root)
 notebook.pack(fill="both", expand=True)
@@ -2026,6 +2061,7 @@ def montar_subaba_network(parent):
     botao_adicionar.pack(side="right", padx=5)
 
     verificar_status()
+    ATUALIZADORES_UI.append(verificar_status)
 
 
 # ------------------------------------------------------------
@@ -2173,14 +2209,30 @@ def montar_subaba_system(parent):
 
     # ---- LibreHardwareMonitor ----
 
-    instalando_lhm = {"ativo": False}
+    estado_lhm = {
+        "ocupado": False,
+        "pronto": False,
+        "resultado": None,
+        "ultima": 0.0,
+        "forcar": True,
+        "operacao": False,
+    }
 
-    def atualizar_status_lhm():
+    def coletar_lhm():
+        # roda em thread: nada de tkinter aqui
+        try:
+            exe = localizar_lhm()
+            rodando = lhm_esta_rodando() if exe else False
+            ativo = lhm_servidor_ativo() if exe else False
+            estado_lhm["resultado"] = (exe, rodando, ativo)
 
-        if instalando_lhm["ativo"]:
-            return
+        except Exception:
+            estado_lhm["resultado"] = None
 
-        exe = localizar_lhm()
+        finally:
+            estado_lhm["pronto"] = True
+
+    def renderizar_lhm(exe, rodando, ativo):
 
         if not exe:
             status_lhm_label.configure(foreground="#c0392b")
@@ -2191,25 +2243,74 @@ def montar_subaba_system(parent):
 
         botao_instalar_lhm.state(["disabled"])
 
-        if lhm_esta_rodando() or lhm_servidor_ativo():
-            botao_abrir_lhm.state(["disabled"])
-        else:
-            botao_abrir_lhm.state(["!disabled"])
-
-        if lhm_servidor_ativo():
+        if ativo:
             status_lhm_label.configure(foreground="#0a7d2c")
             status_lhm_var.set("Instalado e com o servidor ativo na porta 8085. As temperaturas vão funcionar.")
+            botao_abrir_lhm.state(["disabled"])
 
-        elif lhm_esta_rodando():
+        elif rodando:
             status_lhm_label.configure(foreground="#b8860b")
             status_lhm_var.set(
-                "Aberto, mas o servidor está desligado. No programa, vá em "
-                "Options > Remote Web Server > Run."
+                "Aberto, mas sem o servidor. Clique em Ativar para reiniciá-lo com o servidor ligado."
             )
+            botao_abrir_lhm.state(["!disabled"])
 
         else:
             status_lhm_label.configure(foreground="#b8860b")
             status_lhm_var.set("Instalado, mas fechado. Clique em Ativar.")
+            botao_abrir_lhm.state(["!disabled"])
+
+    def tick_lhm():
+
+        if estado_lhm["pronto"]:
+            estado_lhm["pronto"] = False
+            estado_lhm["ocupado"] = False
+
+            if estado_lhm["resultado"] and not estado_lhm["operacao"]:
+                renderizar_lhm(*estado_lhm["resultado"])
+
+        agora = time.time()
+
+        if not estado_lhm["ocupado"] and (estado_lhm["forcar"] or agora - estado_lhm["ultima"] >= 4):
+            estado_lhm["forcar"] = False
+            estado_lhm["ocupado"] = True
+            estado_lhm["ultima"] = agora
+            threading.Thread(target=coletar_lhm, daemon=True).start()
+
+        root.after(500, tick_lhm)
+
+    def atualizar_status_lhm():
+        estado_lhm["forcar"] = True
+
+    def iniciar_operacao_lhm(mensagem):
+        estado_lhm["operacao"] = True
+        botao_instalar_lhm.state(["disabled"])
+        botao_abrir_lhm.state(["disabled"])
+        status_lhm_label.configure(foreground="#555555")
+        status_lhm_var.set(mensagem)
+
+    def encerrar_operacao_lhm():
+        estado_lhm["operacao"] = False
+        estado_lhm["forcar"] = True
+
+    def aplicar_system_e_recarregar():
+
+        try:
+            if not sistema_configurado():
+                os.makedirs(SYSTEM_SKIN_DIR, exist_ok=True)
+
+                with open(SYSTEM_INI_PATH, "w", encoding="utf-16") as f:
+                    f.write(SYSTEM_INI_TEMPLATE)
+
+        except OSError as e:
+            messagebox.showerror("Erro", f"Falha ao gravar o System.ini:\n{e}")
+            return
+
+        verificar_status_sistema()
+
+        if ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label):
+            status_sistema_label.configure(foreground="#0a7d2c")
+            status_sistema_var.set("Skin System atualizada com as temperaturas.")
 
     def instalar_lhm():
 
@@ -2234,11 +2335,7 @@ def montar_subaba_system(parent):
         ):
             return
 
-        instalando_lhm["ativo"] = True
-        botao_instalar_lhm.state(["disabled"])
-        botao_abrir_lhm.state(["disabled"])
-        status_lhm_label.configure(foreground="#555555")
-        status_lhm_var.set("Instalando... aguarde (pode demorar um minuto).")
+        iniciar_operacao_lhm("Instalando... aguarde (pode demorar um minuto).")
 
         resultado = {}
 
@@ -2266,8 +2363,7 @@ def montar_subaba_system(parent):
                 root.after(500, aguardar)
                 return
 
-            instalando_lhm["ativo"] = False
-            atualizar_status_lhm()
+            encerrar_operacao_lhm()
 
             if "erro" in resultado:
                 messagebox.showerror("Erro", f"Falha ao executar o winget:\n{resultado['erro']}")
@@ -2285,7 +2381,7 @@ def montar_subaba_system(parent):
 
         root.after(500, aguardar)
 
-    def abrir_lhm():
+    def ativar_lhm():
 
         exe = localizar_lhm()
 
@@ -2293,42 +2389,89 @@ def montar_subaba_system(parent):
             atualizar_status_lhm()
             return
 
-        if lhm_servidor_ativo():
-            atualizar_status_lhm()
-            return
+        ultimo = estado_lhm["resultado"]
+        rodando = bool(ultimo and ultimo[1])
 
-        if lhm_esta_rodando():
-            messagebox.showinfo(
-                "Aviso",
-                "O LibreHardwareMonitor já está aberto, mas com o servidor desligado.\n\n"
-                "No programa, vá em Options > Remote Web Server > Run."
-            )
-            return
+        if rodando:
+            if not messagebox.askyesno(
+                "Ativar servidor",
+                "O LibreHardwareMonitor está aberto, mas sem o servidor.\n\n"
+                "Vou fechá-lo e abri-lo novamente com o servidor ligado "
+                "(o Windows pode pedir permissão de administrador). Deseja continuar?"
+            ):
+                return
 
-        try:
-            habilitar_webserver_lhm(exe)
+        iniciar_operacao_lhm("Ativando o servidor... aguarde.")
 
-        except OSError as e:
-            messagebox.showwarning(
-                "Aviso",
-                f"Não consegui gravar a configuração do servidor:\n{e}\n\n"
-                "Ligue manualmente em Options > Remote Web Server > Run."
-            )
+        resultado = {}
 
-        if not abrir_lhm_como_admin(exe):
-            messagebox.showerror("Erro", "Não foi possível abrir o LibreHardwareMonitor como administrador.")
-            return
+        def trabalho():
+            try:
+                if lhm_esta_rodando():
+                    ctypes.windll.shell32.ShellExecuteW(
+                        None, "runas", "taskkill", "/F /IM LibreHardwareMonitor.exe", None, 0
+                    )
 
-        status_lhm_label.configure(foreground="#555555")
-        status_lhm_var.set("Abrindo o LibreHardwareMonitor...")
-        root.after(4000, atualizar_status_lhm)
+                    for _ in range(40):
+                        if not lhm_esta_rodando():
+                            break
+                        time.sleep(0.5)
 
-    def atualizar_lhm_periodico():
-        atualizar_status_lhm()
-        root.after(4000, atualizar_lhm_periodico)
+                    if lhm_esta_rodando():
+                        resultado["erro"] = (
+                            "Não consegui fechar o LibreHardwareMonitor. "
+                            "Feche-o manualmente e tente novamente."
+                        )
+                        return
+
+                try:
+                    habilitar_webserver_lhm(exe)
+                    registrar_lhm_na_inicializacao(exe)
+
+                except OSError as e:
+                    resultado["aviso_config"] = str(e)
+
+                if not abrir_lhm_como_admin(exe):
+                    resultado["erro"] = "Não foi possível abrir o LibreHardwareMonitor como administrador."
+                    return
+
+                for _ in range(60):
+                    if lhm_servidor_ativo():
+                        resultado["ok"] = True
+                        return
+                    time.sleep(0.5)
+
+            except OSError as e:
+                resultado["erro"] = str(e)
+
+        thread = threading.Thread(target=trabalho, daemon=True)
+        thread.start()
+
+        def aguardar():
+
+            if thread.is_alive():
+                root.after(500, aguardar)
+                return
+
+            encerrar_operacao_lhm()
+
+            if "erro" in resultado:
+                messagebox.showerror("Erro", resultado["erro"])
+
+            elif resultado.get("ok"):
+                aplicar_system_e_recarregar()
+
+            else:
+                messagebox.showinfo(
+                    "Aviso",
+                    "O LibreHardwareMonitor foi aberto, mas o servidor não respondeu.\n\n"
+                    "No programa, vá em Options > Remote Web Server > Run."
+                )
+
+        root.after(500, aguardar)
 
     botao_instalar_lhm.configure(command=instalar_lhm)
-    botao_abrir_lhm.configure(command=abrir_lhm)
+    botao_abrir_lhm.configure(command=ativar_lhm)
     botao_verificar_lhm.configure(command=atualizar_status_lhm)
 
     buttons_sistema = ttk.Frame(parent, padding=(10, 4))
@@ -2341,7 +2484,162 @@ def montar_subaba_system(parent):
     botao_aplicar_sistema.pack(side="right", padx=5)
 
     verificar_status_sistema()
-    atualizar_lhm_periodico()
+    ATUALIZADORES_UI.append(verificar_status_sistema)
+    tick_lhm()
+
+
+
+# ==========================================
+# RESET - RECRIA AS SKINS NO MODELO DA VERSÃO ATUAL
+# ==========================================
+
+def backup_arquivo(caminho):
+
+    if os.path.exists(caminho):
+        carimbo = time.strftime("%Y%m%d-%H%M%S")
+        shutil.copy2(caminho, f"{caminho}.{carimbo}.bak")
+
+
+def fechar_rainmeter_e_scripts():
+    """Fecha o Rainmeter e os scripts PowerShell que as skins deixam rodando
+    em segundo plano (senão eles seguram os arquivos e o mutex)."""
+
+    flags = 0x08000000
+
+    subprocess.run(["taskkill", "/F", "/IM", "Rainmeter.exe"], capture_output=True, creationflags=flags)
+
+    for _ in range(20):
+        if not rainmeter_esta_rodando():
+            break
+        time.sleep(0.5)
+
+    comando = (
+        "Get-CimInstance Win32_Process | Where-Object { "
+        "$_.CommandLine -like '*check_network.ps1*' -or $_.CommandLine -like '*LinkSpeed.ps1*' "
+        "} | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
+    )
+
+    try:
+        subprocess.run(
+            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", comando],
+            capture_output=True, timeout=20, creationflags=flags
+        )
+
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+    time.sleep(1)
+
+
+def remover_com_backup(caminho):
+
+    if not os.path.exists(caminho):
+        return
+
+    backup_arquivo(caminho)
+    os.remove(caminho)
+
+
+def resetar_tudo():
+
+    exe_devices = os.path.join(os.getcwd(), EXE_NAME)
+    regenera_devices = os.path.exists(INI_FILE) and os.path.exists(exe_devices)
+
+    if not messagebox.askyesno(
+        "Reset",
+        "Isso vai FECHAR o Rainmeter, apagar as skins antigas e recriá-las "
+        "no modelo desta versão do app:\n\n"
+        "  - System (CPU, RAM e temperaturas)\n"
+        "  - Network (com Link Speed)\n"
+        "  - Status de Dispositivos\n\n"
+        "Os dispositivos de rede cadastrados serão mantidos.\n"
+        "Os arquivos atuais ganham uma cópia .bak antes de serem substituídos.\n\n"
+        "Deseja continuar?"
+    ):
+        return
+
+    botao_reset.state(["disabled"])
+    resultado = {"avisos": []}
+
+    def trabalho():
+
+        try:
+            fechar_rainmeter_e_scripts()
+
+            if rainmeter_esta_rodando():
+                resultado["erro"] = (
+                    "Não consegui fechar o Rainmeter. Feche-o manualmente "
+                    "(ou rode este app como administrador) e tente novamente."
+                )
+                return
+
+            for antigo in (
+                SYSTEM_INI_PATH, NETWORK_INI_PATH,
+                LINKSPEED_PS1_PATH, RUNLINKSPEED_VBS_PATH,
+            ):
+                remover_com_backup(antigo)
+
+            os.makedirs(SYSTEM_SKIN_DIR, exist_ok=True)
+
+            with open(SYSTEM_INI_PATH, "w", encoding="utf-16") as f:
+                f.write(SYSTEM_INI_TEMPLATE)
+
+            os.makedirs(NETWORK_SKIN_DIR, exist_ok=True)
+
+            with open(NETWORK_INI_PATH, "w", encoding="utf-8") as f:
+                f.write(NETWORK_INI_TEMPLATE)
+
+            with open(LINKSPEED_PS1_PATH, "w", encoding="utf-8") as f:
+                f.write(LINKSPEED_PS1_TEMPLATE)
+
+            with open(RUNLINKSPEED_VBS_PATH, "w", encoding="utf-8") as f:
+                f.write(RUNLINKSPEED_VBS_TEMPLATE)
+
+        except OSError as e:
+            resultado["erro"] = str(e)
+            return
+
+        if regenera_devices:
+            try:
+                subprocess.run([exe_devices], timeout=90, creationflags=0x08000000)
+
+            except (OSError, subprocess.TimeoutExpired) as e:
+                resultado["avisos"].append(f"Não consegui regenerar os Dispositivos: {e}")
+
+        else:
+            resultado["avisos"].append(
+                "Dispositivos: não regenerado (SideMeterDevices.exe ou devices.ini não encontrado)."
+            )
+
+    thread = threading.Thread(target=trabalho, daemon=True)
+    thread.start()
+
+    def aguardar():
+
+        if thread.is_alive():
+            root.after(500, aguardar)
+            return
+
+        botao_reset.state(["!disabled"])
+
+        if "erro" in resultado:
+            messagebox.showerror("Erro", f"Falha no reset:\n{resultado['erro']}")
+            return
+
+        for atualizador in ATUALIZADORES_UI:
+            atualizador()
+
+        ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini")
+        ativar_skin_rainmeter(NETWORK_SKIN_NAME, "Network.ini")
+
+        mensagem = "Reset concluído. As skins foram recriadas e recarregadas."
+
+        if resultado["avisos"]:
+            mensagem += "\n\n" + "\n".join(resultado["avisos"])
+
+        messagebox.showinfo("Reset", mensagem)
+
+    root.after(500, aguardar)
 
 
 montar_aba_sidemeterdevices(aba_sidemeterdevices)
