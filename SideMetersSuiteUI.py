@@ -2,13 +2,18 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import configparser
+import ctypes
+import glob
 import os
 import re
+import shutil
 import subprocess
+import threading
 import time
 import urllib.request
 import urllib.error
 import webbrowser
+import xml.etree.ElementTree as ET
 
 DIALOG_WIDTH = 420
 DIALOG_HEIGHT = 200
@@ -1256,14 +1261,111 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
 
 
 # ==========================================
+# HELPERS - LIBREHARDWAREMONITOR
+# ==========================================
+
+LHM_WINGET_ID = "LibreHardwareMonitor.LibreHardwareMonitor"
+LHM_URL = "http://localhost:8085/data.json"
+
+
+def localizar_lhm():
+    exe = shutil.which("LibreHardwareMonitor")
+
+    if exe and os.path.exists(exe):
+        return exe
+
+    bases = [
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Packages"),
+        os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "LibreHardwareMonitor"),
+        os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "WinGet", "Packages"),
+    ]
+
+    for base in bases:
+        padrao = os.path.join(glob.escape(base), "**", "LibreHardwareMonitor.exe")
+
+        for caminho in glob.glob(padrao, recursive=True):
+            return caminho
+
+    return None
+
+
+def lhm_esta_rodando():
+    try:
+        resultado = subprocess.run(
+            ["tasklist", "/FI", "IMAGENAME eq LibreHardwareMonitor.exe"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            creationflags=0x08000000
+        )
+        return "LibreHardwareMonitor.exe" in resultado.stdout
+
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def lhm_servidor_ativo():
+    try:
+        with urllib.request.urlopen(LHM_URL, timeout=2) as resposta:
+            return resposta.status == 200
+
+    except (OSError, urllib.error.URLError, ValueError):
+        return False
+
+
+def habilitar_webserver_lhm(exe):
+    """Liga o Remote Web Server (porta 8085) e o modo minimizado no config
+    do LibreHardwareMonitor. Só vale se o programa estiver fechado."""
+
+    config_path = os.path.join(os.path.dirname(exe), "LibreHardwareMonitor.config")
+
+    try:
+        arvore = ET.parse(config_path)
+        raiz = arvore.getroot()
+
+    except (OSError, ET.ParseError):
+        raiz = ET.Element("configuration")
+        arvore = ET.ElementTree(raiz)
+
+    app_settings = raiz.find("appSettings")
+
+    if app_settings is None:
+        app_settings = ET.SubElement(raiz, "appSettings")
+
+    valores = {
+        "runWebServerMenuItem": "true",
+        "listenerPort": "8085",
+        "startMinMenuItem": "true",
+        "minTrayMenuItem": "true",
+    }
+
+    for chave, valor in valores.items():
+        for item in app_settings.findall("add"):
+            if item.get("key") == chave:
+                item.set("value", valor)
+                break
+        else:
+            ET.SubElement(app_settings, "add", {"key": chave, "value": valor})
+
+    arvore.write(config_path, encoding="utf-8", xml_declaration=True)
+
+
+def abrir_lhm_como_admin(exe):
+    resultado = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", exe, None, os.path.dirname(exe), 1
+    )
+    return resultado > 32
+
+
+# ==========================================
 # ROOT
 # ==========================================
 
 root = tk.Tk()
 
 root.title("Side Meters Suite 1.5 - phobosfreeware.blogspot.com")
-root.geometry("560x520")
-root.minsize(560, 520)
+root.geometry("560x420")
+root.minsize(560, 420)
 
 notebook = ttk.Notebook(root)
 notebook.pack(fill="both", expand=True)
@@ -1932,38 +2034,45 @@ def montar_subaba_network(parent):
 
 def montar_subaba_system(parent):
 
-    header_sistema = ttk.Frame(parent, padding=10)
+    header_sistema = ttk.Frame(parent, padding=(10, 6, 10, 0))
     header_sistema.pack(fill="x")
 
-    ttk.Label(header_sistema, text="System CPU/RAM Update", font=("Segoe UI", 16, "bold")).pack(anchor="w")
+    ttk.Label(header_sistema, text="System CPU/RAM Update", font=("Segoe UI", 13, "bold")).pack(anchor="w")
 
     ttk.Label(
         header_sistema,
         text="Aplica uma configuração atualizada de CPU/RAM no bloco \"System\" já existente no Rainmeter."
     ).pack(anchor="w")
 
-    form_sistema = ttk.Frame(parent, padding=10)
+    form_sistema = ttk.Frame(parent, padding=(10, 4))
     form_sistema.pack(fill="both", expand=True)
 
     status_sistema_ini_var = tk.StringVar(value="")
     status_sistema_ini_label = ttk.Label(form_sistema, textvariable=status_sistema_ini_var, justify="left")
-    status_sistema_ini_label.pack(anchor="w", pady=(0, 5))
+    status_sistema_ini_label.pack(anchor="w", pady=(0, 2))
 
     status_sistema_config_var = tk.StringVar(value="")
     status_sistema_config_label = ttk.Label(form_sistema, textvariable=status_sistema_config_var, justify="left")
-    status_sistema_config_label.pack(anchor="w", pady=(0, 10))
+    status_sistema_config_label.pack(anchor="w", pady=(0, 6))
 
-    info_sistema = ttk.Label(
-        form_sistema,
-        text=(
-            f"Arquivo:\n  {SYSTEM_INI_PATH}\n\n"
-            "Temperaturas: requer o LibreHardwareMonitor aberto com o "
-            "Remote Web Server ligado (porta 8085)."
-        ),
-        foreground="#555555",
-        justify="left"
-    )
-    info_sistema.pack(anchor="w", pady=(0, 10))
+    quadro_lhm = ttk.LabelFrame(form_sistema, text="LibreHardwareMonitor (temperaturas)", padding=(8, 4))
+    quadro_lhm.pack(fill="x", pady=(14, 4))
+
+    status_lhm_var = tk.StringVar(value="")
+    status_lhm_label = ttk.Label(quadro_lhm, textvariable=status_lhm_var, justify="left", wraplength=470)
+    status_lhm_label.pack(anchor="w", pady=(0, 4))
+
+    botoes_lhm = ttk.Frame(quadro_lhm)
+    botoes_lhm.pack(fill="x")
+
+    botao_instalar_lhm = ttk.Button(botoes_lhm, text="Instalar")
+    botao_instalar_lhm.pack(side="left")
+
+    botao_abrir_lhm = ttk.Button(botoes_lhm, text="Ativar")
+    botao_abrir_lhm.pack(side="left", padx=5)
+
+    botao_verificar_lhm = ttk.Button(botoes_lhm, text="Verificar")
+    botao_verificar_lhm.pack(side="left")
 
     status_sistema_var = tk.StringVar(value="")
     status_sistema_label = ttk.Label(form_sistema, textvariable=status_sistema_var, foreground="#0a7d2c")
@@ -1986,13 +2095,10 @@ def montar_subaba_system(parent):
 
         if os.path.exists(SYSTEM_INI_PATH):
             status_sistema_ini_label.configure(foreground="#0a7d2c")
-            status_sistema_ini_var.set(f"System.ini original encontrado em:\n  {SYSTEM_INI_PATH}")
+            status_sistema_ini_var.set("System.ini original encontrado.")
         else:
             status_sistema_ini_label.configure(foreground="#c0392b")
-            status_sistema_ini_var.set(
-                "System.ini original não encontrado.\n"
-                f"  Esperado em: {SYSTEM_INI_PATH}"
-            )
+            status_sistema_ini_var.set("System.ini original não encontrado.")
 
         if sistema_configurado():
             status_sistema_config_label.configure(foreground="#0a7d2c")
@@ -2064,7 +2170,168 @@ def montar_subaba_system(parent):
     def atualizar_sistema():
         ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label)
 
-    buttons_sistema = ttk.Frame(parent, padding=10)
+
+    # ---- LibreHardwareMonitor ----
+
+    instalando_lhm = {"ativo": False}
+
+    def atualizar_status_lhm():
+
+        if instalando_lhm["ativo"]:
+            return
+
+        exe = localizar_lhm()
+
+        if not exe:
+            status_lhm_label.configure(foreground="#c0392b")
+            status_lhm_var.set("Não instalado. Clique em Instalar (usa o winget e pede permissão de administrador).")
+            botao_instalar_lhm.state(["!disabled"])
+            botao_abrir_lhm.state(["disabled"])
+            return
+
+        botao_instalar_lhm.state(["disabled"])
+
+        if lhm_esta_rodando() or lhm_servidor_ativo():
+            botao_abrir_lhm.state(["disabled"])
+        else:
+            botao_abrir_lhm.state(["!disabled"])
+
+        if lhm_servidor_ativo():
+            status_lhm_label.configure(foreground="#0a7d2c")
+            status_lhm_var.set("Instalado e com o servidor ativo na porta 8085. As temperaturas vão funcionar.")
+
+        elif lhm_esta_rodando():
+            status_lhm_label.configure(foreground="#b8860b")
+            status_lhm_var.set(
+                "Aberto, mas o servidor está desligado. No programa, vá em "
+                "Options > Remote Web Server > Run."
+            )
+
+        else:
+            status_lhm_label.configure(foreground="#b8860b")
+            status_lhm_var.set("Instalado, mas fechado. Clique em Ativar.")
+
+    def instalar_lhm():
+
+        if localizar_lhm():
+            atualizar_status_lhm()
+            return
+
+        if not shutil.which("winget"):
+            if messagebox.askyesno(
+                "winget não encontrado",
+                "Não encontrei o winget neste computador.\n\n"
+                "Deseja abrir a página de downloads do LibreHardwareMonitor "
+                "para instalar manualmente?"
+            ):
+                webbrowser.open("https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases")
+            return
+
+        if not messagebox.askyesno(
+            "Instalar LibreHardwareMonitor",
+            "Vou instalar o LibreHardwareMonitor e o driver PawnIO (usado para ler os sensores) "
+            "pelo winget.\n\nO Windows vai pedir permissão de administrador. Deseja continuar?"
+        ):
+            return
+
+        instalando_lhm["ativo"] = True
+        botao_instalar_lhm.state(["disabled"])
+        botao_abrir_lhm.state(["disabled"])
+        status_lhm_label.configure(foreground="#555555")
+        status_lhm_var.set("Instalando... aguarde (pode demorar um minuto).")
+
+        resultado = {}
+
+        def trabalho():
+            try:
+                proc = subprocess.run(
+                    [
+                        "winget", "install", "--id", LHM_WINGET_ID, "-e",
+                        "--accept-package-agreements", "--accept-source-agreements",
+                    ],
+                    capture_output=True,
+                    creationflags=0x08000000
+                )
+                resultado["codigo"] = proc.returncode
+
+            except OSError as e:
+                resultado["erro"] = str(e)
+
+        thread = threading.Thread(target=trabalho, daemon=True)
+        thread.start()
+
+        def aguardar():
+
+            if thread.is_alive():
+                root.after(500, aguardar)
+                return
+
+            instalando_lhm["ativo"] = False
+            atualizar_status_lhm()
+
+            if "erro" in resultado:
+                messagebox.showerror("Erro", f"Falha ao executar o winget:\n{resultado['erro']}")
+
+            elif not localizar_lhm():
+                messagebox.showerror(
+                    "Erro",
+                    "A instalação não foi concluída (código "
+                    f"{resultado.get('codigo')}).\n\n"
+                    "Se você recusou a permissão de administrador, tente novamente."
+                )
+
+            else:
+                messagebox.showinfo("Aviso", "LibreHardwareMonitor instalado.\n\nAgora clique em Ativar.")
+
+        root.after(500, aguardar)
+
+    def abrir_lhm():
+
+        exe = localizar_lhm()
+
+        if not exe:
+            atualizar_status_lhm()
+            return
+
+        if lhm_servidor_ativo():
+            atualizar_status_lhm()
+            return
+
+        if lhm_esta_rodando():
+            messagebox.showinfo(
+                "Aviso",
+                "O LibreHardwareMonitor já está aberto, mas com o servidor desligado.\n\n"
+                "No programa, vá em Options > Remote Web Server > Run."
+            )
+            return
+
+        try:
+            habilitar_webserver_lhm(exe)
+
+        except OSError as e:
+            messagebox.showwarning(
+                "Aviso",
+                f"Não consegui gravar a configuração do servidor:\n{e}\n\n"
+                "Ligue manualmente em Options > Remote Web Server > Run."
+            )
+
+        if not abrir_lhm_como_admin(exe):
+            messagebox.showerror("Erro", "Não foi possível abrir o LibreHardwareMonitor como administrador.")
+            return
+
+        status_lhm_label.configure(foreground="#555555")
+        status_lhm_var.set("Abrindo o LibreHardwareMonitor...")
+        root.after(4000, atualizar_status_lhm)
+
+    def atualizar_lhm_periodico():
+        atualizar_status_lhm()
+        root.after(4000, atualizar_lhm_periodico)
+
+    botao_instalar_lhm.configure(command=instalar_lhm)
+    botao_abrir_lhm.configure(command=abrir_lhm)
+    botao_verificar_lhm.configure(command=atualizar_status_lhm)
+
+    buttons_sistema = ttk.Frame(parent, padding=(10, 4))
     buttons_sistema.pack(fill="x", side="bottom")
 
     botao_atualizar_sistema = ttk.Button(buttons_sistema, text="Atualizar", command=atualizar_sistema)
@@ -2074,6 +2341,7 @@ def montar_subaba_system(parent):
     botao_aplicar_sistema.pack(side="right", padx=5)
 
     verificar_status_sistema()
+    atualizar_lhm_periodico()
 
 
 montar_aba_sidemeterdevices(aba_sidemeterdevices)
