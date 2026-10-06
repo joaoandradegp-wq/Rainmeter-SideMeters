@@ -3,12 +3,12 @@
 </h1>
 
 <p align="center">
-Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em monitoramento de dispositivos, servidores e integração com sistemas externos.
+Coleção de widgets e automações para Rainmeter, com foco em monitoramento de dispositivos, servidores, rede e hardware.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
-  <img src="https://img.shields.io/badge/Versão-1.4-blue">
+  <img src="https://img.shields.io/badge/Versão-1.5-blue">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
   <img src="https://img.shields.io/badge/Integração-Rainmeter-lightgrey">
   <img src="https://img.shields.io/badge/Language-PT--BR-orange">
@@ -16,217 +16,134 @@ Coleção de widgets e automações desenvolvidas para o Rainmeter, focadas em m
 
 ---
 
-<h2>📌 Sobre</h2>
+## 📌 Sobre
 
-<p>
-O <b>Side Meters Suite</b> é uma suíte de widgets e ferramentas para o <b>Rainmeter</b>, criada para automatizar monitoramentos e fornecer painéis inspirados em interfaces clássicas.
-</p>
+O **Side Meters Suite** é uma aplicação em Python/Tkinter criada para centralizar a configuração e automação de widgets do Rainmeter.
 
-<p>
-Cada módulo possui backend próprio, integração automática com o Rainmeter e pode ser configurado através de uma interface gráfica, eliminando praticamente toda necessidade de edição manual de arquivos.
-</p>
-
-<p>
-Na versão atual, a aplicação também é responsável por configurar automaticamente uma skin do Rainmeter, validar integrações com APIs, gerar scripts auxiliares e atualizar widgets oficiais do Rainmeter sem necessidade de qualquer configuração manual.
-</p>
+A aplicação permite configurar dispositivos, monitorar servidores e rede, atualizar skins e integrar o **LibreHardwareMonitor** para exibição das temperaturas de CPU e GPU.
 
 ---
 
-<h2>🧩 Módulos atuais</h2>
+## 🧩 Módulos atuais
 
-<ul>
-  <li>🌐 <b>SideMeterDevices</b> - Monitoramento ONLINE / OFFLINE de dispositivos em rede</li>
-  <li>🖥 <b>CRT Terminal</b> - Dashboard inspirado em computadores estilo terminal</li>
-  <li>🌐 Link Speed - Velocidade do Link Ethernet/Wi-fi com o Roteador</li>
-  <li>💾 System CPU/RAM Update - Porcentagem e Disponibilidade da Memória RAM</li>
-</ul>
-
----
-
-<h2>🚀 Como utilizar</h2>
-
-<ol>
-  <li>Instale o Rainmeter pelo site oficial <a href="https://www.rainmeter.net/" target="_blank">clicando aqui</a></li>
-  <li>Execute o <b>SideMetersSuite.exe</b></li>
-  <li>Escolha o módulo desejado</li>
-  <li>Configure os parâmetros</li>
-  <li>Clique em <b>Atualizar</b></li>
-  <li>O Side Meters Suite fará toda a configuração automaticamente</li>
-</ol>
+* **SideMeterDevices** - Gerenciamento de dispositivos monitorados;
+* **CRT Terminal** - Monitoramento de servidores através de API;
+* **Link Speed** - Monitoramento da velocidade do link;
+* **System CPU/RAM** - Monitoramento de CPU e memória;
+* **LibreHardwareMonitor** - Instalação, ativação e monitoramento de temperaturas de CPU e GPU.
 
 ---
 
-<h2>🌐 Side Meter Devices</h2>
+## ⚙️ Principais funcionalidades
 
-<p>
-O <b>SideMeterDevices</b> é responsável pelo monitoramento contínuo de equipamentos locais ou remotos, exibindo seu status diretamente no desktop através do Rainmeter.
-</p>
+### SideMeterDevices
 
-<p>
-Cada dispositivo pode ser monitorado utilizando endereço IP, Hostname da rede local ou serviços DDNS, permitindo acompanhar computadores, servidores, roteadores, NAS, câmeras IP e outros dispositivos conectados à rede.
-</p>
+* Cadastro, edição e remoção de dispositivos
+* Suporte a IP, Hostname e DDNS
+* Geração automática do `devices.ini`
 
-<ul>
-  <li>✅ Status ONLINE / OFFLINE</li>
-  <li>🌐 Suporte a IP</li>
-  <li>🖥 Suporte a Hostname</li>
-  <li>🌍 Suporte a DDNS</li>
-  <li>⚡ Atualização automática</li>
-  <li>🟢 Indicadores visuais</li>
-  <li>🔄 Monitor persistente em background</li>
-  <li>⚙️ Configuração gráfica dos dispositivos</li>
-</ul>
+### CRT Terminal
 
----
+* Configuração de servidor através de API HTTP
+* Teste de conexão
+* Validação dos campos esperados
+* Atualização automática dos dados utilizados pelo Rainmeter
 
-<h2>🖥 CRT Terminal</h2>
+### Link Speed
 
-<p>
-O <b>CRT Terminal</b> é uma skin inspirada em computadores do tipo <b>Terminal Mainframe</b></b>.
-</p>
+* Identificação automática da interface de rede
+* Prioridade para Ethernet
+* Fallback para Wi-Fi
+* Monitoramento de velocidade, download e upload
 
-<p>
-Ela transforma o Rainmeter em um painel de monitoramento do servidor, utilizando uma API HTTP para exibir informações em tempo real.
-</p>
+### System
 
-<p>
-Antes de gerar qualquer configuração, o Side Meters Suite valida automaticamente a resposta da API, verificando se todos os campos necessários estão disponíveis para a skin.
-</p>
+* CPU e RAM
+* Memória disponível
+* Temperatura da CPU
+* Temperatura da GPU
+* Identificação do processador e GPU
+* Indicadores de temperatura
 
-<ul>
-  <li>📡 Integração com API HTTP</li>
-  <li>🌡 Monitoramento de CPU</li>
-  <li>💾 Monitoramento de Memória</li>
-  <li>💿 Utilização de Disco</li>
-  <li>🌐 Rede</li>
-  <li>📥 Download</li>
-  <li>📤 Upload</li>
-</ul>
+### LibreHardwareMonitor
+
+* Instalação automática através do WinGet
+* Instalação das dependências necessárias
+* Configuração do Web Server na porta `8085`
+* Inicialização automática com privilégios administrativos
+* Verificação do status do servidor
+* Integração com a skin `System`
 
 ---
 
-<h2>🌐 Link Speed</h2>
+## 🌡️ LibreHardwareMonitor
 
-<p>
-Atualiza automaticamente o widget oficial <b>Network</b> do Rainmeter adicionando o monitoramento da velocidade real da conexão de rede.
-</p>
+O LibreHardwareMonitor faz parte do fluxo de configuração do módulo **System**.
 
-<p>
-O módulo identifica automaticamente conexões Ethernet e Wi-Fi, criando todos os scripts necessários para manter a informação atualizada no widget.
-</p>
+Caso não esteja instalado, o Side Meters Suite permite realizar a instalação diretamente pela interface.
 
-<ul>
-  <li>⚡ Link Speed em tempo real</li>
-  <li>🌐 Compatível com Ethernet</li>
-  <li>📶 Compatível com Wi-Fi</li>
-</ul>
+Após a instalação, o programa pode configurar e iniciar o LibreHardwareMonitor com o Web Server disponível em:
 
----
+```text
+http://localhost:8085/data.json
+```
 
-<h2>💾 System Update</h2>
+A skin System utiliza os sensores:
 
-<p>
-Atualiza automaticamente o widget oficial <b>System</b> do Rainmeter, substituindo sua configuração padrão por uma versão mais completa.
-</p>
+```text
+CPU Package
+GPU Core
+```
 
-<ul>
-  <li>🖥 Utilização de CPU</li>
-  <li>💾 Utilização de Memória RAM</li>
-  <li>📊 Memória Total</li>
-  <li>📉 Memória Disponível</li>
-</ul>
+para apresentar as temperaturas no Rainmeter.
+
+Caso o LibreHardwareMonitor já esteja aberto, mas o Web Server esteja desativado, a interface informa que ele deve ser habilitado em:
+
+```text
+Options > Remote Web Server > Run
+```
 
 ---
 
-<h2>🖥 Interface de Configuração</h2>
+## 🚀 Como utilizar
 
-<p>
-O <b>Side Meters Suite</b> centraliza toda a configuração da suíte através de uma única interface gráfica.
-</p>
+1. Instale o **Rainmeter**.
+2. Execute o **Side Meters Suite**.
+3. Selecione o módulo desejado.
+4. Configure os parâmetros.
+5. Clique em **Adicionar**, **Atualizar** ou **Testar Conexão**, conforme o módulo.
+6. O programa gera ou atualiza os arquivos necessários e ativa a skin correspondente.
 
-<p>
-A aplicação possui três áreas principais:
-</p>
+Para o monitoramento de temperatura:
 
-<ul>
-  <li>🌐 Status de Dispositivos (SideMeterDevices)</li>
-  <li>🖥 Status do Servidor (CRT Terminal)</li>
-  <li>⚙️ Rainmeter
-      <ul>
-         <li>Network (Link Speed)</li>
-         <li>System (CPU/RAM Update)</li>
-      </ul>
-  </li>
-</ul>
-
-<p>
-Cada módulo pode ser configurado individualmente sem necessidade de editar arquivos manualmente.
-</p>
+```text
+Rainmeter
+   └── System
+       └── LibreHardwareMonitor
+           ├── Instalar
+           ├── Ativar
+           └── Verificar
+```
 
 ---
 
-<h2>⚙️ Automação</h2>
+## 📂 Estrutura
 
-<p>
-O Side Meters Suite gera automaticamente todos os arquivos necessários para funcionamento das skins e widgets.
-</p>
-
-<ul>
-  <li>PowerShell</li>
-  <li>VBScript</li>
-  <li>Batch Script</li>
-  <li>Arquivos INI</li>
-  <li>Pastas do Rainmeter</li>
-  <li>Arquivos de configuração</li>
-</ul>
-
-<p>
-Durante a atualização o sistema pode:
-</p>
-
-<ul>
-  <li>Validar a comunicação com APIs</li>
-  <li>Gerar arquivos automaticamente</li>
-  <li>Criar diretórios necessários</li>
-  <li>Inicializar scripts em segundo plano</li>
-  <li>Detectar o Rainmeter instalado</li>
-  <li>Abrir automaticamente o Rainmeter</li>
-  <li>Recarregar as skins</li>
-  <li>Atualizar widgets oficiais</li>
-</ul>
-
----
-
-<h2>📂 Estrutura</h2>
-
-<pre>
-Documentos/
-│
+```text
+Documents/
 └── Rainmeter/
-    │
-    ├── network_status.txt
-    │
     ├── Scripts/
-    │   ├── devices.ini
-    │   ├── check_network.ps1
-    │   ├── check_network.bat
-    │   ├── start_hidden.vbs
-    │   └── network.lua
+    │   └── devices.ini
     │
     └── Skins/
-        │
         ├── illustro/
         │   ├── Network/
         │   │   ├── Network.ini
         │   │   ├── LinkSpeed.ps1
-        │   │   ├── RunLinkSpeed.vbs
-        │   │   └── linkspeed.txt
+        │   │   └── RunLinkSpeed.vbs
         │   │
         │   └── System/
         │       └── System.ini
-        │
-        ├── NetworkDevices/
-        │   └── SideMeterDevices.ini
         │
         └── ServerMonitor/
             ├── ServerMonitor.ini
@@ -234,44 +151,39 @@ Documentos/
             │   ├── start_api.bat
             │   ├── run_hidden.vbs
             │   └── update_api.ps1
-            │
             └── @Resources/
                 └── api.txt
-</pre>
+```
 
 ---
 
-<h2>🛠 Tecnologias</h2>
+## 🛠 Tecnologias
 
-<ul>
-  <li>Python</li>
-  <li>Tkinter</li>
-  <li>Rainmeter</li>
-  <li>PowerShell</li>
-  <li>VBScript</li>
-  <li>Batch Script</li>
-  <li>HTTP API</li>
-  <li>WebParser</li>
-  <li>ConfigParser</li>
-  <li>Regex</li>
-</ul>
+* Python
+* Tkinter
+* Rainmeter
+* PowerShell
+* VBScript
+* WinGet
+* LibreHardwareMonitor
+* PawnIO
+* HTTP API
+* WebParser
 
 ---
 
 ## 📸 Preview
 
 <p align="center">
-<i>
-  <img width="300" alt="image" src="https://github.com/user-attachments/assets/bfa783e1-0bb3-4756-b0c1-ab35228fdc9f" />
-  <img width="300" alt="image" src="https://github.com/user-attachments/assets/594553de-ac9d-4a1b-a6c1-200d0ae6c58e" />
-<br>
-  <img width="300" alt="image" src="https://github.com/user-attachments/assets/5ae904e8-0a86-4791-80a2-94d836ac68fb" />
-  <img width="300" alt="image" src="https://github.com/user-attachments/assets/7e987a36-f8c9-40e6-8d9f-5962a4aea376" />
-</i>
+  <img width="300" src="https://github.com/user-attachments/assets/bfa783e1-0bb3-4756-b0c1-ab35228fdc9f" />
+  <img width="300" src="https://github.com/user-attachments/assets/594553de-ac9d-4a1b-a6c1-200d0ae6c58e" />
+  <br>
+  <img width="300" src="https://github.com/user-attachments/assets/5ae904e8-0a86-4791-80a2-94d836ac68fb" />
+  <img width="300" src="https://github.com/user-attachments/assets/7e987a36-f8c9-40e6-8d9f-5962a4aea376" />
 </p>
 
 ---
 
 <p align="center">
-<b>Side Meters Suite</b> reúne diferentes módulos para o Rainmeter, oferecendo monitoramento de dispositivos, servidores e automações em uma única interface gráfica de configuração. 🤖
+<b>Side Meters Suite</b> centraliza a configuração e automação dos seus widgets Rainmeter em uma única aplicação. 🤖
 </p>
