@@ -18,7 +18,7 @@ Coleção de widgets e automações para Rainmeter, com foco em monitoramento de
 
 ## 📌 Sobre
 
-O **Side Meters Suite** é uma aplicação em Python/Tkinter criada para centralizar a configuração e automação de widgets do Rainmeter.
+O **Side Meters Suite** é uma aplicação criada para centralizar a configuração e automação de widgets do Rainmeter.
 
 A aplicação permite configurar dispositivos, monitorar servidores e rede, atualizar skins e integrar o **LibreHardwareMonitor** para exibição das temperaturas de CPU e GPU.
 
