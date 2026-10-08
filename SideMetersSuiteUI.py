@@ -16,7 +16,26 @@ import webbrowser
 import xml.etree.ElementTree as ET
 
 DIALOG_WIDTH = 420
-DIALOG_HEIGHT = 200
+DIALOG_HEIGHT = 250
+
+
+# ==========================================
+# IDIOMA (Português se o Windows estiver em PT, senão Inglês)
+# ==========================================
+
+def _detectar_portugues():
+    try:
+        return (ctypes.windll.kernel32.GetUserDefaultUILanguage() & 0xFF) == 0x16
+    except Exception:
+        return False
+
+
+IDIOMA_PT = _detectar_portugues()
+
+
+def tr(pt, en):
+    return pt if IDIOMA_PT else en
+
 
 # ==========================================
 # PATHS - ABA "SIDEMETERDEVICES" 
@@ -1229,7 +1248,7 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
         messagebox.showwarning(
             "Rainmeter não instalado",
             "Não encontrei o Rainmeter instalado neste computador.\n\n"
-            "Os arquivos da skin já foram gerados. Vou abrir o site "
+            "Os arquivos do bloco já foram gerados. Vou abrir o site "
             "oficial para você baixar e instalar o Rainmeter."
         )
         webbrowser.open(RAINMETER_DOWNLOAD_URL)
@@ -1399,7 +1418,7 @@ root.minsize(560, 455)
 barra_inferior = ttk.Frame(root, padding=(8, 4))
 barra_inferior.pack(side="bottom", fill="x")
 
-botao_reset = ttk.Button(barra_inferior, text="Reset", command=lambda: resetar_tudo())
+botao_reset = ttk.Button(barra_inferior, text=tr("Redefinir Tudo", "Reset All"), command=lambda: resetar_tudo())
 botao_reset.pack(side="right")
 
 notebook = ttk.Notebook(root)
@@ -1672,7 +1691,7 @@ def montar_aba_apimonitor(parent):
 
     subtitle = ttk.Label(
         header,
-        text="Configura uma skin CRT TERMINAL no Rainmeter, através dos dados disponibilizados pelo Servidor."
+        text="Configura um bloco no estilo CRT TERMINAL no Rainmeter, através dos dados disponibilizados pelo Servidor."
     )
     subtitle.pack(anchor="w")
 
@@ -1729,7 +1748,7 @@ def montar_aba_apimonitor(parent):
         if faltando:
             return True, "O servidor respondeu, mas faltam campos esperados: " + ", ".join(faltando), faltando
 
-        return True, "O servidor respondeu com todos os campos esperados pela skin.", []
+        return True, "O servidor respondeu com todos os campos esperados pelo bloco.", []
 
     def testar():
 
@@ -1810,8 +1829,8 @@ def montar_aba_apimonitor(parent):
             prosseguir = messagebox.askyesno(
                 "Formato de resposta inesperado",
                 f"{msg}\n\n"
-                "A skin usa esses campos para montar CPU, memória, disco e "
-                "rede. Os medidores correspondentes podem ficar em branco.\n\n"
+                "O bloco usa esses campos para montar todas as configurações. "
+                "Os medidores correspondentes podem ficar em branco.\n\n"
                 "Deseja continuar mesmo assim?"
             )
 
@@ -1848,8 +1867,8 @@ def montar_aba_apimonitor(parent):
 
         messagebox.showinfo(
             "Aviso",
-            "Skin CRT TERMINAL configurada.\n\n"
-            "O Rainmeter irá reiniciar a skin \"ServerMonitor\" "
+            "Bloco CRT TERMINAL configurado!\n\n"
+            "O Rainmeter irá reiniciar o bloco \"ServerMonitor\" "
             "para que a nova configuração tenha efeito."
         )
 
@@ -1906,19 +1925,24 @@ def montar_aba_rainmeter(parent):
 # SUB-ABA - NETWORK.ini
 # ------------------------------------------------------------
 
+def criar_cabecalho_subaba(parent, titulo, subtitulo):
+    """Cabeçalho idêntico (mesma posição e fonte) para as sub-abas do Rainmeter."""
+    cabecalho = ttk.Frame(parent, padding=(10, 10, 10, 0))
+    cabecalho.pack(fill="x")
+
+    ttk.Label(cabecalho, text=titulo, font=("Segoe UI", 13, "bold")).pack(anchor="w")
+    ttk.Label(cabecalho, text=subtitulo).pack(anchor="w")
+
+    return cabecalho
+
+
 def montar_subaba_network(parent):
 
-    header = ttk.Frame(parent, padding=10)
-    header.pack(fill="x")
-
-    title = ttk.Label(header, text="Link Speed", font=("Segoe UI", 16, "bold"))
-    title.pack(anchor="w")
-
-    subtitle = ttk.Label(
-        header,
-        text="Adiciona o medidor de velocidade do link ao bloco \"Network\" já existente no Rainmeter."
+    criar_cabecalho_subaba(
+        parent,
+        "Link Speed",
+        "Adiciona um medidor de velocidade da rede ao bloco \"Network\" já existente no Rainmeter."
     )
-    subtitle.pack(anchor="w")
 
     form = ttk.Frame(parent, padding=10)
     form.pack(fill="both", expand=True)
@@ -2044,7 +2068,7 @@ def montar_subaba_network(parent):
 
         messagebox.showinfo(
             "Aviso",
-            "Link Speed configurado na skin \"Network\".\n\n"
+            "Link Speed configurado no bloco \"Network\".\n\n"
             "O Rainmeter irá reiniciar para que a nova configuração tenha efeito."
         )
 
@@ -2070,15 +2094,11 @@ def montar_subaba_network(parent):
 
 def montar_subaba_system(parent):
 
-    header_sistema = ttk.Frame(parent, padding=(10, 6, 10, 0))
-    header_sistema.pack(fill="x")
-
-    ttk.Label(header_sistema, text="System CPU/RAM Update", font=("Segoe UI", 13, "bold")).pack(anchor="w")
-
-    ttk.Label(
-        header_sistema,
-        text="Aplica uma configuração atualizada de CPU/RAM no bloco \"System\" já existente no Rainmeter."
-    ).pack(anchor="w")
+    criar_cabecalho_subaba(
+        parent,
+        "System Update",
+        "Aplica uma configuração atualizada ao bloco \"System\" já existente no Rainmeter."
+    )
 
     form_sistema = ttk.Frame(parent, padding=(10, 4))
     form_sistema.pack(fill="both", expand=True)
@@ -2091,7 +2111,7 @@ def montar_subaba_system(parent):
     status_sistema_config_label = ttk.Label(form_sistema, textvariable=status_sistema_config_var, justify="left")
     status_sistema_config_label.pack(anchor="w", pady=(0, 6))
 
-    quadro_lhm = ttk.LabelFrame(form_sistema, text="LibreHardwareMonitor (temperaturas)", padding=(8, 4))
+    quadro_lhm = ttk.LabelFrame(form_sistema, text="LibreHardwareMonitor (\u00b0C)", padding=(8, 4))
     quadro_lhm.pack(fill="x", pady=(14, 4))
 
     status_lhm_var = tk.StringVar(value="")
@@ -2107,8 +2127,6 @@ def montar_subaba_system(parent):
     botao_abrir_lhm = ttk.Button(botoes_lhm, text="Ativar")
     botao_abrir_lhm.pack(side="left", padx=5)
 
-    botao_verificar_lhm = ttk.Button(botoes_lhm, text="Verificar")
-    botao_verificar_lhm.pack(side="left")
 
     status_sistema_var = tk.StringVar(value="")
     status_sistema_label = ttk.Label(form_sistema, textvariable=status_sistema_var, foreground="#0a7d2c")
@@ -2197,7 +2215,7 @@ def montar_subaba_system(parent):
         messagebox.showinfo(
             "Aviso",
             "Bloco \"System\" configurado.\n\n"
-            "O Rainmeter irá reiniciar (ou carregar) o bloco para que a "
+            "O Rainmeter irá reiniciar o bloco para que a "
             "nova configuração tenha efeito."
         )
 
@@ -2245,7 +2263,7 @@ def montar_subaba_system(parent):
 
         if ativo:
             status_lhm_label.configure(foreground="#0a7d2c")
-            status_lhm_var.set("Instalado e com o servidor ativo na porta 8085. As temperaturas vão funcionar.")
+            status_lhm_var.set("Instalado e com o servidor ativo na porta 8085.")
             botao_abrir_lhm.state(["disabled"])
 
         elif rodando:
@@ -2310,7 +2328,7 @@ def montar_subaba_system(parent):
 
         if ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label):
             status_sistema_label.configure(foreground="#0a7d2c")
-            status_sistema_var.set("Skin System atualizada com as temperaturas.")
+            status_sistema_var.set("System atualizado com medidores de temperatura.")
 
     def instalar_lhm():
 
@@ -2472,7 +2490,6 @@ def montar_subaba_system(parent):
 
     botao_instalar_lhm.configure(command=instalar_lhm)
     botao_abrir_lhm.configure(command=ativar_lhm)
-    botao_verificar_lhm.configure(command=atualizar_status_lhm)
 
     buttons_sistema = ttk.Frame(parent, padding=(10, 4))
     buttons_sistema.pack(fill="x", side="bottom")
@@ -2547,9 +2564,9 @@ def resetar_tudo():
 
     if not messagebox.askyesno(
         "Reset",
-        "Isso vai FECHAR o Rainmeter, apagar as skins antigas e recriá-las "
+        "Isso vai FECHAR o Rainmeter, apagar as configurações antigas e recriá-las "
         "no modelo desta versão do app:\n\n"
-        "  - System (CPU, RAM e temperaturas)\n"
+        "  - System (CPU, RAM e Temperaturas)\n"
         "  - Network (com Link Speed)\n"
         "  - Status de Dispositivos\n\n"
         "Os dispositivos de rede cadastrados serão mantidos.\n"
@@ -2632,7 +2649,7 @@ def resetar_tudo():
         ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini")
         ativar_skin_rainmeter(NETWORK_SKIN_NAME, "Network.ini")
 
-        mensagem = "Reset concluído. As skins foram recriadas e recarregadas."
+        mensagem = "As configurações foram recriadas e recarregadas."
 
         if resultado["avisos"]:
             mensagem += "\n\n" + "\n".join(resultado["avisos"])
