@@ -175,11 +175,11 @@ Documents/
 ## 📸 Preview
 
 <p align="center">
-  <img width="300" src="https://github.com/user-attachments/assets/bfa783e1-0bb3-4756-b0c1-ab35228fdc9f" />
-  <img width="300" src="https://github.com/user-attachments/assets/594553de-ac9d-4a1b-a6c1-200d0ae6c58e" />
+  <img width="300" src="https://github.com/user-attachments/assets/7a463a2c-68ad-4772-9e84-c19a04d90dee" />
+  <img width="300" src="https://github.com/user-attachments/assets/3f7d841e-ad60-4180-b1c8-f861f7bb9b60" />
   <br>
-  <img width="300" src="https://github.com/user-attachments/assets/5ae904e8-0a86-4791-80a2-94d836ac68fb" />
-  <img width="300" src="https://github.com/user-attachments/assets/7e987a36-f8c9-40e6-8d9f-5962a4aea376" />
+  <img width="300" src="https://github.com/user-attachments/assets/1b6fc158-895e-4a2d-9d1d-b1d27209d19e" />
+  <img width="300" src="https://github.com/user-attachments/assets/e14134ad-d11d-4988-900f-ddc2906459eb" />
 </p>
 
 ---
