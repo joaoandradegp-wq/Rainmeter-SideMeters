@@ -591,6 +591,7 @@ NETWORK_INI_TEMPLATE = r"""; ----------------------------------
 [Rainmeter]
 Update=1000
 Background=#@#Background.png
+AccurateText=1
 BackgroundMode=3
 BackgroundMargins=0,34,0,14
 
@@ -604,7 +605,7 @@ License=Creative Commons BY-NC-SA 3.0
 Version=2.0
 
 [Variables]
-fontName=Segoe UI
+fontName=Segoe UI Variable Text
 textSize=8
 colorBar=235,170,0,255
 colorText=255,255,255,205
@@ -847,6 +848,7 @@ H=1
 SYSTEM_INI_TEMPLATE = r"""[Rainmeter]
 Update=1000
 Background=#@#Background.png
+AccurateText=1
 BackgroundMode=3
 BackgroundMargins=0,34,0,14
 
@@ -857,7 +859,7 @@ Information=Displays system information.
 Version=2.0
 
 [Variables]
-fontName=Segoe UI
+fontName=Segoe UI Variable Text
 textSize=8
 colorBar=235,170,0,255
 colorText=255,255,255,205
