@@ -1726,7 +1726,7 @@ def montar_aba_apimonitor(parent):
 
     def montar_url(endereco_bruto):
         endereco = re.sub(r'^https?://', '', endereco_bruto.strip()).rstrip('/')
-        return endereco, f"http://{endereco}/api/rainmeter"
+        return endereco, f"http://{endereco}/api/monitor"
 
     def testar_conexao(url, timeout=5):
         try:
