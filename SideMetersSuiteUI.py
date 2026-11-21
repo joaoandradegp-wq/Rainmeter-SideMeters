@@ -19,34 +19,23 @@ DIALOG_WIDTH = 420
 DIALOG_HEIGHT = 250
 
 
-# ==========================================
-# IDIOMA (Português se o Windows estiver em PT, senão Inglês)
-# ==========================================
-
-def _detectar_portugues():
+def detectar_portugues_brasil():
     try:
-        return (ctypes.windll.kernel32.GetUserDefaultUILanguage() & 0xFF) == 0x16
+        return ctypes.windll.kernel32.GetUserDefaultUILanguage() == 0x0416
     except Exception:
         return False
 
 
-IDIOMA_PT = _detectar_portugues()
+IDIOMA_PT = detectar_portugues_brasil()
 
 
 def tr(pt, en):
     return pt if IDIOMA_PT else en
 
 
-# ==========================================
-# PATHS - ABA "SIDEMETERDEVICES" 
-# ==========================================
-
 INI_FILE = os.path.expanduser(r"~\Documents\Rainmeter\Scripts\devices.ini")
 EXE_NAME = "SideMeterDevices.exe"
 
-# ==================================================================
-# PATHS - ABA "API Monitor"
-# ==================================================================
 
 SKINS_ROOT = os.path.expanduser(r"~\Documents\Rainmeter\Skins")
 SKIN_DIR = os.path.join(SKINS_ROOT, "ServerMonitor")
@@ -60,9 +49,6 @@ PS1_PATH = os.path.join(SCRIPTS_DIR, "update_api.ps1")
 
 RAINMETER_DOWNLOAD_URL = "https://www.rainmeter.net/"
 
-# ==================================================================
-# PATHS - NETWORK.ini
-# ==================================================================
 
 NETWORK_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "Network")
 NETWORK_INI_PATH = os.path.join(NETWORK_SKIN_DIR, "Network.ini")
@@ -71,9 +57,6 @@ RUNLINKSPEED_VBS_PATH = os.path.join(NETWORK_SKIN_DIR, "RunLinkSpeed.vbs")
 
 NETWORK_SKIN_NAME = os.path.join("illustro", "Network")
 
-# ==================================================================
-# PATHS - SYSTEM.INI
-# ==================================================================
 
 SYSTEM_SKIN_DIR = os.path.join(SKINS_ROOT, "illustro", "System")
 SYSTEM_INI_PATH = os.path.join(SYSTEM_SKIN_DIR, "System.ini")
@@ -92,19 +75,12 @@ CAMPOS_ESPERADOS_API = [
     "UPLOAD",
 ]
 
-# ------------------------------------------
-# TEMPLATES ESTÁTICOS
-# ------------------------------------------
 
 START_API_BAT = r"""@echo off
 wscript.exe "%~dp0run_hidden.vbs"
 """
 
-RUN_HIDDEN_VBS = r'''' ----------------------------------------------------
-' Abre o update_api.ps1 sem janelas visiveis.
-' Usa WScript.Shell.Run com o parametro 0, que esconde a janela por completo.
-' ----------------------------------------------------
-Set fso = CreateObject("Scripting.FileSystemObject")
+RUN_HIDDEN_VBS = r'''Set fso = CreateObject("Scripting.FileSystemObject")
 scriptFolder = fso.GetParentFolderName(WScript.ScriptFullName)
 
 Set WshShell = CreateObject("WScript.Shell")
@@ -113,12 +89,7 @@ command = "powershell.exe -ExecutionPolicy Bypass -NoProfile -File """ & scriptF
 WshShell.Run command, 0, False
 '''
 
-UPDATE_API_PS1_TEMPLATE = r"""# ----------------------------------------------------
-# Antes de comecar, fecha qualquer instancia anterior
-# desse mesmo script que ainda esteja rodando, entao
-# so fica UM powershell ativo por vez.
-# ----------------------------------------------------
-$myPid = $PID
+UPDATE_API_PS1_TEMPLATE = r"""$myPid = $PID
 
 Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe'" |
     Where-Object { $_.CommandLine -match 'update_api\.ps1' -and $_.ProcessId -ne $myPid } |
@@ -164,17 +135,11 @@ FontColor=0,255,120
 DimColor=120,255,180
 LineColor=0,255,120,50
 
-; Layout base
 ColLeftX=60
 ColRightX=430
 ColWidth=300
 BarW=300
 BarH=8
-
-
-;=========================
-; MEDIDAS
-;=========================
 
 [MeasureCPU]
 Measure=Plugin
@@ -272,21 +237,11 @@ UpdateRate=1
 RegExp="(?si)UPLOAD=([0-9.]+)"
 StringIndex=1
 
-
-;=========================
-; DIVISOR SUPERIOR
-;=========================
-
 [HeaderLine]
 Meter=Shape
 Shape=Rectangle 0,0,700,1 | Fill Color #LineColor# | StrokeWidth 0
 X=40
 Y=20
-
-
-;=========================
-; CPU (coluna esquerda)
-;=========================
 
 [CPU_Title]
 Meter=String
@@ -338,11 +293,6 @@ FontFace=#FontName#
 FontSize=16
 FontColor=#DimColor#
 AntiAlias=1
-
-
-;=========================
-; MEMORY (coluna direita)
-;=========================
 
 [Memory_Title]
 Meter=String
@@ -401,11 +351,6 @@ Shape=Rectangle 0,0,700,1 | Fill Color #LineColor# | StrokeWidth 0
 X=40
 Y=140
 
-
-;=========================
-; STORAGE (coluna esquerda)
-;=========================
-
 [Storage_Title]
 Meter=String
 Text=STORAGE
@@ -458,11 +403,6 @@ FontSize=16
 FontColor=#DimColor#
 AntiAlias=1
 
-
-;=========================
-; NETWORK (coluna direita)
-;=========================
-
 [Network_Title]
 Meter=String
 Text=NETWORK
@@ -511,20 +451,12 @@ Meter=Shape
 Shape=Rectangle 0,0,700,1 | Fill Color #LineColor# | StrokeWidth 0
 X=40
 Y=270
-
 """
 
-# ------------------------------------------
-# TEMPLATES - LINK SPEED
-# ------------------------------------------
 
-LINKSPEED_PS1_TEMPLATE = r"""# LinkSpeed.ps1
-# Obtem a velocidade da interface Ethernet e WIFI fisica real e exclui adaptadores virtuais.
-
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+LINKSPEED_PS1_TEMPLATE = r"""$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $outputFile = Join-Path $scriptPath "linkspeed.txt"
 
-# Palavras-chave usadas para descartar adaptadores que NAO sao placas fisicas reais.
 $virtualKeywords = @(
     'Virtual', 'Hyper-V', 'VMware', 'VirtualBox', 'VPN', 'TAP',
     'Bluetooth', 'Loopback', 'Miniport', 'WAN Miniport', 'Tunnel',
@@ -532,32 +464,26 @@ $virtualKeywords = @(
 )
 
 try {
-
-    # Busca todos os adaptadores fisicos ativos com padrao Ethernet (802.3)
     $candidatos = Get-NetAdapter -Physical |
         Where-Object {
             $_.Status -eq "Up" -and
             $_.HardwareInterface -eq $true -and
             $_.MediaType -eq "802.3" -and
-            $_.ConnectorPresent -eq $true               # so placas com conector fisico real
+            $_.ConnectorPresent -eq $true
         }
 
-    # Remove qualquer coisa que combine com nomes/descricoes de adaptadores virtuais
     $adapter = $candidatos |
         Where-Object {
             $desc = "$($_.InterfaceDescription) $($_.Name)"
             -not ($virtualKeywords | Where-Object { $desc -match $_ })
         } |
-        # Se sobrar mais de uma, prioriza a de maior velocidade real reportada
         Sort-Object -Property LinkSpeed -Descending |
         Select-Object -First 1
 
     if ($adapter) {
-        # Achou Ethernet cabeada real -> usa ela
         $adapter.LinkSpeed | Out-File $outputFile -Encoding ASCII -Force
     }
     else {
-        # Sem cabo -> tenta achar um adaptador Wi-Fi ativo como fallback
         $wifiAdapter = Get-NetAdapter -Physical |
             Where-Object {
                 $_.Status -eq "Up" -and
@@ -584,11 +510,7 @@ RUNLINKSPEED_VBS_TEMPLATE = r'''Set objShell = CreateObject("Wscript.Shell")
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File """ & Replace(WScript.ScriptFullName,"RunLinkSpeed.vbs","LinkSpeed.ps1") & """", 0, True
 '''
 
-NETWORK_INI_TEMPLATE = r"""; ----------------------------------
-; NETWORK + LINK SPEED
-; ----------------------------------
-
-[Rainmeter]
+NETWORK_INI_TEMPLATE = r"""[Rainmeter]
 Update=1000
 Background=#@#Background.png
 AccurateText=1
@@ -613,10 +535,6 @@ colorText=255,255,255,205
 maxDownload=10485760
 maxUpload=10485760
 
-;================================================
-; MEASURES
-;================================================
-
 [measureIP]
 Measure=WebParser
 URL=https://checkip.amazonaws.com/
@@ -633,10 +551,6 @@ NetInSpeed=#maxDownload#
 Measure=NetOut
 NetOutSpeed=#maxUpload#
 
-;================================================
-; LINK SPEED
-;================================================
-
 [MeasureRun]
 Measure=Calc
 Formula=Counter % 60
@@ -651,10 +565,6 @@ RegExp=(.*)
 StringIndex=1
 UpdateRate=5
 DynamicVariables=1
-
-;================================================
-; STYLES
-;================================================
 
 [styleTitle]
 StringAlign=Center
@@ -697,10 +607,6 @@ SolidColor=255,255,255,15
 [styleSeperator]
 SolidColor=255,255,255,15
 
-;================================================
-; TITLE
-;================================================
-
 [meterTitle]
 Meter=String
 MeterStyle=styleTitle
@@ -709,10 +615,6 @@ Y=12
 W=190
 H=18
 Text=Network
-
-;================================================
-; IP
-;================================================
 
 [meterIPLabel]
 Meter=String
@@ -740,10 +642,6 @@ X=10
 Y=55
 W=190
 H=1
-
-;================================================
-; UPLOAD
-;================================================
 
 [meterUploadLabel]
 Meter=String
@@ -775,10 +673,6 @@ Y=75
 W=190
 H=1
 
-;================================================
-; DOWNLOAD
-;================================================
-
 [meterDownloadLabel]
 Meter=String
 MeterStyle=styleLeftText
@@ -809,10 +703,6 @@ Y=95
 W=190
 H=1
 
-;================================================
-; LINK SPEED
-;================================================
-
 [meterLinkLabel]
 Meter=String
 MeterStyle=styleLeftText
@@ -841,9 +731,6 @@ W=190
 H=1
 """
 
-# ------------------------------------------
-# TEMPLATE - SYSTEM.INI 
-# ------------------------------------------
 
 SYSTEM_INI_TEMPLATE = r"""[Rainmeter]
 Update=1000
@@ -864,20 +751,14 @@ textSize=8
 colorBar=235,170,0,255
 colorText=255,255,255,205
 
-; Cores das temperaturas
 colorGood=90,200,90,255
 colorWarn=235,200,0,255
 colorHot=230,60,60,255
 
-; Limites (em °C): abaixo de Warn = verde, entre Warn e Hot = amarelo, a partir de Hot = vermelho
 cpuWarn=60
 cpuHot=75
 gpuWarn=65
 gpuHot=80
-
-;------------------------------------------------
-; SYSTEM MEASURES
-;------------------------------------------------
 
 [measureCPU]
 Measure=CPU
@@ -975,10 +856,6 @@ URL=[measureGPUNameWeb]
 StringIndex=1
 Substitute="NVIDIA GeForce ":""
 
-;------------------------------------------------
-; STYLES
-;------------------------------------------------
-
 [styleTitle]
 StringAlign=Center
 StringCase=Upper
@@ -1018,10 +895,6 @@ SolidColor=255,255,255,15
 [styleSeparator]
 SolidColor=255,255,255,15
 
-;------------------------------------------------
-; TITLE
-;------------------------------------------------
-
 [meterTitle]
 Meter=String
 MeterStyle=styleTitle
@@ -1032,10 +905,6 @@ H=18
 Text=SYSTEM
 LeftMouseUpAction=["taskmgr.exe"]
 ToolTipText=Open Task Manager
-
-;------------------------------------------------
-; CPU TEMPERATURE
-;------------------------------------------------
 
 [meterLabelCPUTemp]
 Meter=String
@@ -1057,10 +926,6 @@ W=190
 H=14
 NumOfDecimals=0
 Text=%1°C
-
-;------------------------------------------------
-; CPU
-;------------------------------------------------
 
 [meterLabelCPU]
 Meter=String
@@ -1090,10 +955,6 @@ Y=75
 W=190
 H=1
 
-;------------------------------------------------
-; RAM
-;------------------------------------------------
-
 [meterLabelRAM]
 Meter=String
 MeterStyle=styleLeftText
@@ -1122,10 +983,6 @@ X=10
 Y=95
 W=190
 H=1
-
-;------------------------------------------------
-; AVAILABLE RAM
-;------------------------------------------------
 
 [meterLabelFree]
 Meter=String
@@ -1157,10 +1014,6 @@ Y=115
 W=190
 H=1
 
-;------------------------------------------------
-; GPU TEMPERATURE
-;------------------------------------------------
-
 [meterLabelGPUTemp]
 Meter=String
 MeterStyle=styleLeftText
@@ -1181,10 +1034,6 @@ W=190
 H=14
 Text=%1°C
 
-;------------------------------------------------
-; BOTTOM SEPARATOR
-;------------------------------------------------
-
 [meterSeparator]
 Meter=Image
 MeterStyle=styleSeparator
@@ -1194,9 +1043,6 @@ W=190
 H=1
 """
 
-# ==========================================
-# HELPERS - ATIVAÇÃO DE SKINS NO RAINMETER
-# ==========================================
 
 def ler_texto(caminho):
     with open(caminho, "rb") as f:
@@ -1243,31 +1089,34 @@ def rainmeter_esta_rodando():
 
 
 def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label=None):
-
     rainmeter_exe = localizar_rainmeter()
 
     if not rainmeter_exe:
         messagebox.showwarning(
-            "Rainmeter não instalado",
-            "Não encontrei o Rainmeter instalado neste computador.\n\n"
-            "Os arquivos do bloco já foram gerados. Vou abrir o site "
-            "oficial para você baixar e instalar o Rainmeter."
+            tr("Rainmeter não instalado", "Rainmeter not installed"),
+            tr(
+                "Não encontrei o Rainmeter instalado neste computador.\n\n"
+                "Os arquivos do bloco já foram gerados. Vou abrir o site "
+                "oficial para você baixar e instalar o Rainmeter.",
+                "I could not find Rainmeter installed on this computer.\n\n"
+                "The block files have already been generated. I will open the "
+                "official website so you can download and install Rainmeter."
+            )
         )
         webbrowser.open(RAINMETER_DOWNLOAD_URL)
         return False
 
     if not rainmeter_esta_rodando():
-
         try:
             subprocess.Popen([rainmeter_exe])
 
         except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao abrir o Rainmeter:\n{e}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao abrir o Rainmeter:\n{e}", f"Failed to open Rainmeter:\n{e}"))
             return False
 
         if status_label is not None and status_var is not None:
             status_label.configure(foreground="#555555")
-            status_var.set("Abrindo o Rainmeter...")
+            status_var.set(tr("Abrindo o Rainmeter...", "Opening Rainmeter..."))
             root.update_idletasks()
 
         time.sleep(3)
@@ -1278,13 +1127,9 @@ def ativar_skin_rainmeter(skin_name, ini_filename, status_var=None, status_label
         return True
 
     except OSError as e:
-        messagebox.showerror("Erro", f"Falha ao acionar o Rainmeter:\n{e}")
+        messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao acionar o Rainmeter:\n{e}", f"Failed to trigger Rainmeter:\n{e}"))
         return False
 
-
-# ==========================================
-# HELPERS - LIBREHARDWAREMONITOR
-# ==========================================
 
 LHM_WINGET_ID = "LibreHardwareMonitor.LibreHardwareMonitor"
 LHM_URL = "http://localhost:8085/data.json"
@@ -1346,10 +1191,6 @@ def lhm_servidor_ativo():
 
 
 def habilitar_webserver_lhm(exe):
-    """Liga o Remote Web Server (porta 8085) no config do LibreHardwareMonitor
-    e ativa Start Minimized, Minimize To Tray e Minimize On Close.
-    Só vale com o programa fechado (ele sobrescreve o config ao sair)."""
-
     config_path = os.path.join(os.path.dirname(exe), "LibreHardwareMonitor.config")
 
     try:
@@ -1368,9 +1209,9 @@ def habilitar_webserver_lhm(exe):
     valores = {
         "runWebServerMenuItem": "true",
         "listenerPort": "8085",
-        "startMinMenuItem": "true",    # Start Minimized
-        "minTrayMenuItem": "true",     # Minimize To Tray
-        "minCloseMenuItem": "true",    # Minimize On Close
+        "startMinMenuItem": "true",
+        "minTrayMenuItem": "true",
+        "minCloseMenuItem": "true",
     }
 
     for chave, valor in valores.items():
@@ -1388,8 +1229,6 @@ LHM_TASK_NAME = "Libre Hardware Monitor"
 
 
 def registrar_lhm_na_inicializacao(exe):
-    """Run On Windows Startup: cria tarefa agendada que abre o LHM como
-    administrador no logon (o LHM precisa de admin para ler os sensores)."""
     params = (
         f'/Create /TN "{LHM_TASK_NAME}" '
         f'/TR "\\"{exe}\\"" /SC ONLOGON /RL HIGHEST /F'
@@ -1407,10 +1246,6 @@ def abrir_lhm_como_admin(exe):
     return resultado > 32
 
 
-# ==========================================
-# ROOT
-# ==========================================
-
 root = tk.Tk()
 
 root.title("Side Meters Suite 1.5 - phobosfreeware.blogspot.com")
@@ -1420,7 +1255,10 @@ root.minsize(560, 455)
 barra_inferior = ttk.Frame(root, padding=(8, 4))
 barra_inferior.pack(side="bottom", fill="x")
 
-botao_reset = ttk.Button(barra_inferior, text=tr("Redefinir Tudo", "Reset All"), command=lambda: resetar_tudo())
+botao_reset = ttk.Button(barra_inferior, text=tr(
+    "Redefinir Tudo",
+    "Reset All"
+), command=lambda: resetar_tudo())
 botao_reset.pack(side="right")
 
 notebook = ttk.Notebook(root)
@@ -1430,26 +1268,24 @@ aba_sidemeterdevices = ttk.Frame(notebook)
 aba_apimonitor = ttk.Frame(notebook)
 aba_rainmeter = ttk.Frame(notebook)
 
-notebook.add(aba_sidemeterdevices, text="Status de Dispositivos")
-notebook.add(aba_apimonitor, text="Status do Servidor")
+notebook.add(aba_sidemeterdevices, text=tr("Status de Dispositivos", "Devices Status"))
+notebook.add(aba_apimonitor, text=tr("Status do Servidor", "Server Status"))
 notebook.add(aba_rainmeter, text="Rainmeter")
 
 
-# ==========================================
-# ABA 1 - SIDEMETERDEVICES 
-# ==========================================
-
 def montar_aba_sidemeterdevices(parent):
-
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
 
-    title = ttk.Label(header, text="Dispositivos", font=("Segoe UI", 16, "bold"))
+    title = ttk.Label(header, text=tr("Dispositivos", "Devices"), font=("Segoe UI", 16, "bold"))
     title.pack(anchor="w")
 
     subtitle = ttk.Label(
         header,
-        text="Gerenciamento de dispositivos monitorados pelo Rainmeter."
+        text=tr(
+            "Gerenciamento de dispositivos monitorados pelo Rainmeter.",
+            "Management of the devices monitored by Rainmeter."
+        )
     )
 
     subtitle.pack(anchor="w")
@@ -1461,7 +1297,7 @@ def montar_aba_sidemeterdevices(parent):
 
     tree = ttk.Treeview(frame_table, columns=columns, show="headings")
 
-    tree.heading("nome", text="Dispositivo")
+    tree.heading("nome", text=tr("Dispositivo", "Device"))
     tree.heading("ip", text="IP / Host / DDNS")
 
     tree.column("nome", width=220)
@@ -1475,7 +1311,6 @@ def montar_aba_sidemeterdevices(parent):
     scroll.pack(side="right", fill="y")
 
     def carregar():
-
         tree.delete(*tree.get_children())
 
         if not os.path.exists(INI_FILE):
@@ -1485,16 +1320,14 @@ def montar_aba_sidemeterdevices(parent):
         cfg.read(INI_FILE, encoding="utf-8")
 
         for sec in cfg.sections():
-
             ip = cfg[sec].get("ip", "")
 
             tree.insert("", "end", values=(sec, ip))
 
     def adicionar():
-
         win = tk.Toplevel(root)
 
-        win.title("Adicionar")
+        win.title(tr("Adicionar", "Add"))
 
         largura = DIALOG_WIDTH
         altura = DIALOG_HEIGHT
@@ -1514,7 +1347,7 @@ def montar_aba_sidemeterdevices(parent):
         frame = ttk.Frame(win, padding=20)
         frame.pack(fill="both", expand=True)
 
-        ttk.Label(frame, text="Nome do dispositivo:").pack(anchor="w")
+        ttk.Label(frame, text=tr("Nome do dispositivo:", "Device name:")).pack(anchor="w")
 
         en_nome = ttk.Entry(frame)
         en_nome.pack(fill="x", pady=(5, 8))
@@ -1528,26 +1361,23 @@ def montar_aba_sidemeterdevices(parent):
         btns.pack(side="bottom", fill="x", padx=20, pady=12)
 
         def salvar():
-
             nome = en_nome.get().strip()
             ip = en_ip.get().strip()
 
             if not nome:
-
-                messagebox.showwarning("Aviso", "Informe o nome")
+                messagebox.showwarning(tr("Aviso", "Notice"), tr("Informe o nome", "Enter the name"))
                 return
 
             if not ip:
-
-                messagebox.showwarning("Aviso", "Informe IP ou host")
+                messagebox.showwarning(tr("Aviso", "Notice"), tr("Informe IP ou host", "Enter the IP or host"))
                 return
 
             tree.insert("", "end", values=(nome, ip))
 
             win.destroy()
 
-        ttk.Button(btns, text="Cancelar", command=win.destroy).pack(side="right")
-        ttk.Button(btns, text="Salvar", command=salvar).pack(side="right", padx=5)
+        ttk.Button(btns, text=tr("Cancelar", "Cancel"), command=win.destroy).pack(side="right")
+        ttk.Button(btns, text=tr("Salvar", "Save"), command=salvar).pack(side="right", padx=5)
 
         en_nome.focus()
 
@@ -1555,7 +1385,6 @@ def montar_aba_sidemeterdevices(parent):
         win.bind("<Escape>", lambda e: win.destroy())
 
     def editar():
-
         sel = tree.selection()
 
         if not sel:
@@ -1567,7 +1396,7 @@ def montar_aba_sidemeterdevices(parent):
 
         win = tk.Toplevel(root)
 
-        win.title("Editar")
+        win.title(tr("Editar", "Edit"))
 
         largura = DIALOG_WIDTH
         altura = DIALOG_HEIGHT
@@ -1587,7 +1416,7 @@ def montar_aba_sidemeterdevices(parent):
         frame = ttk.Frame(win, padding=20)
         frame.pack(fill="both", expand=True)
 
-        ttk.Label(frame, text="Nome do dispositivo:").pack(anchor="w")
+        ttk.Label(frame, text=tr("Nome do dispositivo:", "Device name:")).pack(anchor="w")
 
         en_nome = ttk.Entry(frame)
         en_nome.insert(0, nome_old)
@@ -1603,7 +1432,6 @@ def montar_aba_sidemeterdevices(parent):
         btns.pack(side="bottom", fill="x", padx=20, pady=12)
 
         def salvar():
-
             tree.item(
                 item,
                 values=(
@@ -1614,8 +1442,8 @@ def montar_aba_sidemeterdevices(parent):
 
             win.destroy()
 
-        ttk.Button(btns, text="Cancelar", command=win.destroy).pack(side="right")
-        ttk.Button(btns, text="Salvar", command=salvar).pack(side="right", padx=5)
+        ttk.Button(btns, text=tr("Cancelar", "Cancel"), command=win.destroy).pack(side="right")
+        ttk.Button(btns, text=tr("Salvar", "Save"), command=salvar).pack(side="right", padx=5)
 
         en_nome.focus()
 
@@ -1623,14 +1451,12 @@ def montar_aba_sidemeterdevices(parent):
         win.bind("<Escape>", lambda e: win.destroy())
 
     def remover():
-
         sel = tree.selection()
 
         for item in sel:
             tree.delete(item)
 
     def salvar_ini():
-
         pasta = os.path.dirname(INI_FILE)
 
         os.makedirs(pasta, exist_ok=True)
@@ -1638,7 +1464,6 @@ def montar_aba_sidemeterdevices(parent):
         cfg = configparser.ConfigParser()
 
         for item in tree.get_children():
-
             nome, ip = tree.item(item)["values"]
 
             cfg[nome] = {"ip": ip}
@@ -1647,21 +1472,22 @@ def montar_aba_sidemeterdevices(parent):
             cfg.write(f)
 
         messagebox.showinfo(
-            "Aviso",
-            "O Rainmeter irá reiniciar para que sua configuração tenha efeito!"
+            tr("Aviso", "Notice"),
+            tr(
+                "O Rainmeter irá reiniciar para que sua configuração tenha efeito!",
+                "Rainmeter will restart for your configuration to take effect!"
+            )
         )
 
     def atualizar():
-
         salvar_ini()
 
         exe_path = os.path.join(os.getcwd(), EXE_NAME)
 
         if not os.path.exists(exe_path):
-
             messagebox.showerror(
-                "Erro",
-                "SideMeterDevices.exe não encontrado."
+                tr("Erro", "Error"),
+                tr("SideMeterDevices.exe não encontrado.", "SideMeterDevices.exe not found.")
             )
 
             return
@@ -1671,49 +1497,59 @@ def montar_aba_sidemeterdevices(parent):
     buttons = ttk.Frame(parent, padding=10)
     buttons.pack(fill="x")
 
-    ttk.Button(buttons, text="Adicionar", command=adicionar).pack(side="left", padx=5)
-    ttk.Button(buttons, text="Editar", command=editar).pack(side="left", padx=5)
-    ttk.Button(buttons, text="Remover", command=remover).pack(side="left", padx=5)
-    ttk.Button(buttons, text="Atualizar", command=atualizar).pack(side="right")
+    ttk.Button(buttons, text=tr("Adicionar", "Add"), command=adicionar).pack(side="left", padx=5)
+    ttk.Button(buttons, text=tr("Editar", "Edit"), command=editar).pack(side="left", padx=5)
+    ttk.Button(buttons, text=tr("Remover", "Remove"), command=remover).pack(side="left", padx=5)
+    ttk.Button(buttons, text=tr("Atualizar", "Update"), command=atualizar).pack(side="right")
 
     carregar()
 
 
-# ==========================================
-# ABA 2 - API MONITOR 
-# ==========================================
-
 def montar_aba_apimonitor(parent):
-
     header = ttk.Frame(parent, padding=10)
     header.pack(fill="x")
 
-    title = ttk.Label(header, text="Monitoramento do Servidor", font=("Segoe UI", 16, "bold"))
+    title = ttk.Label(header, text=tr(
+        "Monitoramento do Servidor",
+        "Server Monitoring"
+    ), font=("Segoe UI", 16, "bold"))
     title.pack(anchor="w")
 
     subtitle = ttk.Label(
         header,
-        text="Configura um bloco no estilo CRT TERMINAL no Rainmeter, através dos dados disponibilizados pelo Servidor."
+        text=tr(
+            "Configura um bloco no estilo CRT TERMINAL no Rainmeter, através dos dados disponibilizados pelo Servidor.",
+            "Configures a CRT TERMINAL style block in Rainmeter, using the data provided by the Server."
+        )
     )
     subtitle.pack(anchor="w")
 
     form = ttk.Frame(parent, padding=10)
     form.pack(fill="x")
 
-    ttk.Label(form, text="Endereço do Servidor (IP/host e porta, ex: 192.168.100.121:8181):").pack(anchor="w")
+    ttk.Label(form, text=tr(
+        "Endereço do Servidor (IP/host e porta, ex: 192.168.100.121:8181):",
+        "Server address (IP/host and port, e.g. 192.168.100.121:8181):"
+    )).pack(anchor="w")
 
     en_endereco = ttk.Entry(form)
     en_endereco.pack(fill="x", pady=(5, 10))
 
     info = ttk.Label(
         form,
-        text=(
+        text=tr(
             "Arquivos gerados em:\n"
             f"  {SKIN_INI_PATH}\n"
             f"  {BAT_PATH}\n"
             f"  {VBS_PATH}\n"
             f"  {PS1_PATH}\n\n"
-            f"Pasta de dados:\n {RESOURCES_DIR}"
+            f"Pasta de dados:\n {RESOURCES_DIR}",
+            "Files generated at:\n"
+            f"  {SKIN_INI_PATH}\n"
+            f"  {BAT_PATH}\n"
+            f"  {VBS_PATH}\n"
+            f"  {PS1_PATH}\n\n"
+            f"Data folder:\n {RESOURCES_DIR}"
         ),
         foreground="#555555",
         justify="left"
@@ -1736,34 +1572,48 @@ def montar_aba_apimonitor(parent):
                 corpo = resp.read().decode("utf-8", errors="replace")
 
         except urllib.error.HTTPError as e:
-            return False, f"O servidor respondeu com erro HTTP {e.code}.", []
+            return False, tr(
+                f"O servidor respondeu com erro HTTP {e.code}.",
+                f"The server responded with HTTP error {e.code}."
+            ), []
 
         except urllib.error.URLError as e:
-            return False, f"Não foi possível conectar ao endereço ({e.reason}).", []
+            return False, tr(
+                f"Não foi possível conectar ao endereço ({e.reason}).",
+                f"Could not connect to the address ({e.reason})."
+            ), []
 
         except (OSError, ValueError) as e:
-            return False, f"Não foi possível conectar ao endereço ({e}).", []
+            return False, tr(
+                f"Não foi possível conectar ao endereço ({e}).",
+                f"Could not connect to the address ({e})."
+            ), []
 
         encontrados = set(re.findall(r'([A-Z_]+)\s*=', corpo))
         faltando = [c for c in CAMPOS_ESPERADOS_API if c not in encontrados]
 
         if faltando:
-            return True, "O servidor respondeu, mas faltam campos esperados: " + ", ".join(faltando), faltando
+            return True, tr(
+                "O servidor respondeu, mas faltam campos esperados: ",
+                "The server responded, but expected fields are missing: "
+            ) + ", ".join(faltando), faltando
 
-        return True, "O servidor respondeu com todos os campos esperados pelo bloco.", []
+        return True, tr(
+            "O servidor respondeu com todos os campos esperados pelo bloco.",
+            "The server responded with all the fields expected by the block."
+        ), []
 
     def testar():
-
         endereco_bruto = en_endereco.get().strip()
 
         if not endereco_bruto:
-            messagebox.showwarning("Aviso", "Informe o endereço do servidor")
+            messagebox.showwarning(tr("Aviso", "Notice"), tr("Informe o endereço do servidor", "Enter the server address"))
             return
 
         _, url = montar_url(endereco_bruto)
 
         status_label.configure(foreground="#555555")
-        status_var.set(f"Testando {url} ...")
+        status_var.set(tr(f"Testando {url} ...", f"Testing {url} ..."))
         parent.update_idletasks()
 
         ok, msg, faltando = testar_conexao(url)
@@ -1778,7 +1628,6 @@ def montar_aba_apimonitor(parent):
         status_var.set(msg)
 
     def carregar_endereco_atual():
-
         if not os.path.exists(PS1_PATH):
             return
 
@@ -1796,29 +1645,31 @@ def montar_aba_apimonitor(parent):
             pass
 
     def gerar():
-
         endereco_bruto = en_endereco.get().strip()
 
         if not endereco_bruto:
-            messagebox.showwarning("Aviso", "Informe o endereço do servidor")
+            messagebox.showwarning(tr("Aviso", "Notice"), tr("Informe o endereço do servidor", "Enter the server address"))
             return False
 
         endereco, url = montar_url(endereco_bruto)
 
         status_label.configure(foreground="#555555")
-        status_var.set(f"Verificando {url} ...")
+        status_var.set(tr(f"Verificando {url} ...", f"Checking {url} ..."))
         parent.update_idletasks()
 
         ok, msg, faltando = testar_conexao(url)
 
         if not ok:
-
             prosseguir = messagebox.askyesno(
-                "Servidor não respondeu",
-                f"{msg}\n\n"
-                "Isso normalmente significa que o endereço está errado ou "
-                "o servidor da API ainda não está no ar.\n\n"
-                "Deseja gravar os arquivos mesmo assim?"
+                tr("Servidor não respondeu", "Server did not respond"),
+                f"{msg}\n\n" + tr(
+                    "Isso normalmente significa que o endereço está errado ou "
+                    "o servidor da API ainda não está no ar.\n\n"
+                    "Deseja gravar os arquivos mesmo assim?",
+                    "This usually means the address is wrong or "
+                    "the API server is not online yet.\n\n"
+                    "Do you want to write the files anyway?"
+                )
             )
 
             if not prosseguir:
@@ -1827,13 +1678,16 @@ def montar_aba_apimonitor(parent):
                 return False
 
         elif faltando:
-
             prosseguir = messagebox.askyesno(
-                "Formato de resposta inesperado",
-                f"{msg}\n\n"
-                "O bloco usa esses campos para montar todas as configurações. "
-                "Os medidores correspondentes podem ficar em branco.\n\n"
-                "Deseja continuar mesmo assim?"
+                tr("Formato de resposta inesperado", "Unexpected response format"),
+                f"{msg}\n\n" + tr(
+                    "O bloco usa esses campos para montar todas as configurações. "
+                    "Os medidores correspondentes podem ficar em branco.\n\n"
+                    "Deseja continuar mesmo assim?",
+                    "The block uses these fields to build all its settings. "
+                    "The corresponding meters may be left blank.\n\n"
+                    "Do you want to continue anyway?"
+                )
             )
 
             if not prosseguir:
@@ -1861,23 +1715,30 @@ def montar_aba_apimonitor(parent):
                 f.write(ps1_conteudo)
 
         except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao gravar os arquivos:\n{e}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao gravar os arquivos:\n{e}", f"Failed to write the files:\n{e}"))
             return False
 
         status_label.configure(foreground="#0a7d2c")
-        status_var.set(f"Arquivos gerados com sucesso. API: {url}")
+        status_var.set(tr(
+            f"Arquivos gerados com sucesso. API: {url}",
+            f"Files generated successfully. API: {url}"
+        ))
 
         messagebox.showinfo(
-            "Aviso",
-            "Bloco CRT TERMINAL configurado!\n\n"
-            "O Rainmeter irá reiniciar o bloco \"ServerMonitor\" "
-            "para que a nova configuração tenha efeito."
+            tr("Aviso", "Notice"),
+            tr(
+                "Bloco CRT TERMINAL configurado!\n\n"
+                "O Rainmeter irá reiniciar o bloco \"ServerMonitor\" "
+                "para que a nova configuração tenha efeito.",
+                "CRT TERMINAL block configured!\n\n"
+                "Rainmeter will restart the \"ServerMonitor\" block "
+                "for the new configuration to take effect."
+            )
         )
 
         return True
 
     def atualizar():
-
         gerado = gerar()
 
         if not gerado:
@@ -1891,25 +1752,23 @@ def montar_aba_apimonitor(parent):
                     shell=True
                 )
             except OSError as e:
-                messagebox.showerror("Erro", f"Falha ao iniciar o script:\n{e}")
+                messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao iniciar o script:\n{e}", f"Failed to start the script:\n{e}"))
 
         ativar_skin_rainmeter("ServerMonitor", "ServerMonitor.ini", status_var, status_label)
 
     buttons = ttk.Frame(parent, padding=10)
     buttons.pack(fill="x", side="bottom")
 
-    ttk.Button(buttons, text="Atualizar", command=atualizar).pack(side="right")
-    ttk.Button(buttons, text="Testar Conexão", command=testar).pack(side="right", padx=5)
+    ttk.Button(buttons, text=tr("Atualizar", "Update"), command=atualizar).pack(side="right")
+    ttk.Button(buttons, text=tr(
+        "Testar Conexão",
+        "Test Connection"
+    ), command=testar).pack(side="right", padx=5)
 
     carregar_endereco_atual()
 
 
-# ==========================================
-# ABA 3 - RAINMETER (LINK SPEED)
-# ==========================================
-
 def montar_aba_rainmeter(parent):
-
     sub_notebook = ttk.Notebook(parent)
     sub_notebook.pack(fill="both", expand=True)
 
@@ -1923,12 +1782,7 @@ def montar_aba_rainmeter(parent):
     montar_subaba_system(sub_aba_system)
 
 
-# ------------------------------------------------------------
-# SUB-ABA - NETWORK.ini
-# ------------------------------------------------------------
-
 def criar_cabecalho_subaba(parent, titulo, subtitulo):
-    """Cabeçalho idêntico (mesma posição e fonte) para as sub-abas do Rainmeter."""
     cabecalho = ttk.Frame(parent, padding=(10, 10, 10, 0))
     cabecalho.pack(fill="x")
 
@@ -1939,11 +1793,13 @@ def criar_cabecalho_subaba(parent, titulo, subtitulo):
 
 
 def montar_subaba_network(parent):
-
     criar_cabecalho_subaba(
         parent,
         "Link Speed",
-        "Adiciona um medidor de velocidade da rede ao bloco \"Network\" já existente no Rainmeter."
+        tr(
+            "Adiciona um medidor de velocidade da rede ao bloco \"Network\" já existente no Rainmeter.",
+            "Adds a network speed meter to the existing Rainmeter \"Network\" block."
+        )
     )
 
     form = ttk.Frame(parent, padding=10)
@@ -1959,8 +1815,12 @@ def montar_subaba_network(parent):
 
     info = ttk.Label(
         form,
-        text=(
+        text=tr(
             "Arquivos envolvidos:\n"
+            f"  {NETWORK_INI_PATH}\n"
+            f"  {LINKSPEED_PS1_PATH}\n"
+            f"  {RUNLINKSPEED_VBS_PATH}",
+            "Files involved:\n"
             f"  {NETWORK_INI_PATH}\n"
             f"  {LINKSPEED_PS1_PATH}\n"
             f"  {RUNLINKSPEED_VBS_PATH}"
@@ -1975,7 +1835,6 @@ def montar_subaba_network(parent):
     status_label.pack(anchor="w")
 
     def link_speed_configurado():
-
         if not os.path.exists(NETWORK_INI_PATH):
             return False
 
@@ -1989,59 +1848,80 @@ def montar_subaba_network(parent):
         return "MeasureLink" in conteudo
 
     def verificar_status():
-
         if os.path.exists(NETWORK_INI_PATH):
             status_ini_label.configure(foreground="#0a7d2c")
-            status_ini_var.set(f"Network.ini original encontrado em:\n  {NETWORK_INI_PATH}")
+            status_ini_var.set(tr(
+                f"Network.ini original encontrado em:\n  {NETWORK_INI_PATH}",
+                f"Original Network.ini found at:\n  {NETWORK_INI_PATH}"
+            ))
         else:
             status_ini_label.configure(foreground="#c0392b")
-            status_ini_var.set(
+            status_ini_var.set(tr(
                 "Network.ini original não encontrado.\n"
-                f"  Esperado em: {NETWORK_INI_PATH}"
-            )
+                f"  Esperado em: {NETWORK_INI_PATH}",
+                "Original Network.ini not found.\n"
+                f"  Expected at: {NETWORK_INI_PATH}"
+            ))
 
         if link_speed_configurado():
             status_link_label.configure(foreground="#0a7d2c")
-            status_link_var.set("Link Speed já está configurado neste bloco.")
+            status_link_var.set(tr(
+                "Link Speed já está configurado neste bloco.",
+                "Link Speed is already configured in this block."
+            ))
             botao_adicionar.state(["disabled"])
             botao_atualizar.state(["disabled"])
         else:
             status_link_label.configure(foreground="#b8860b")
-            status_link_var.set("Link Speed ainda não foi adicionado a este bloco.")
+            status_link_var.set(tr(
+                "Link Speed ainda não foi adicionado a este bloco.",
+                "Link Speed has not been added to this block yet."
+            ))
             botao_adicionar.state(["!disabled"])
             botao_atualizar.state(["!disabled"])
 
     def adicionar_link_speed():
-
         if not os.path.exists(NETWORK_INI_PATH):
-
             messagebox.showwarning(
-                "Aviso",
-                "O Network.ini original não foi encontrado.\n\n"
-                f"Esperado em:\n{NETWORK_INI_PATH}\n\n"
-                "Instale/carregue o bloco \"Network\" do Rainmeter antes de continuar."
+                tr("Aviso", "Notice"),
+                tr(
+                    "O Network.ini original não foi encontrado.\n\n"
+                    f"Esperado em:\n{NETWORK_INI_PATH}\n\n"
+                    "Instale/carregue o bloco \"Network\" do Rainmeter antes de continuar.",
+                    "The original Network.ini was not found.\n\n"
+                    f"Expected at:\n{NETWORK_INI_PATH}\n\n"
+                    "Install/load the Rainmeter \"Network\" block before continuing."
+                )
             )
             return
 
         if link_speed_configurado():
-
             prosseguir = messagebox.askyesno(
-                "Link Speed já configurado",
-                "O Link Speed já parece estar configurado neste bloco.\n\n"
-                "Deseja sobrescrever o Network.ini e os scripts mesmo assim?"
+                tr("Link Speed já configurado", "Link Speed already configured"),
+                tr(
+                    "O Link Speed já parece estar configurado neste bloco.\n\n"
+                    "Deseja sobrescrever o Network.ini e os scripts mesmo assim?",
+                    "Link Speed already seems to be configured in this block.\n\n"
+                    "Do you want to overwrite Network.ini and the scripts anyway?"
+                )
             )
 
             if not prosseguir:
                 return
 
         else:
-
             prosseguir = messagebox.askyesno(
-                "Adicionar Link Speed",
-                "Isso vai sobrescrever o Network.ini atual por uma versão que "
-                "já inclui o medidor de Link Speed, e criar os scripts "
-                "LinkSpeed.ps1 e RunLinkSpeed.vbs na mesma pasta.\n\n"
-                "Deseja continuar?"
+                tr("Adicionar Link Speed", "Add Link Speed"),
+                tr(
+                    "Isso vai sobrescrever o Network.ini atual por uma versão que "
+                    "já inclui o medidor de Link Speed, e criar os scripts "
+                    "LinkSpeed.ps1 e RunLinkSpeed.vbs na mesma pasta.\n\n"
+                    "Deseja continuar?",
+                    "This will overwrite the current Network.ini with a version that "
+                    "already includes the Link Speed meter, and create the scripts "
+                    "LinkSpeed.ps1 and RunLinkSpeed.vbs in the same folder.\n\n"
+                    "Do you want to continue?"
+                )
             )
 
             if not prosseguir:
@@ -2060,18 +1940,25 @@ def montar_subaba_network(parent):
                 f.write(RUNLINKSPEED_VBS_TEMPLATE)
 
         except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao gravar os arquivos:\n{e}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao gravar os arquivos:\n{e}", f"Failed to write the files:\n{e}"))
             return
 
         status_label.configure(foreground="#0a7d2c")
-        status_var.set("Link Speed adicionado com sucesso ao Network.ini.")
+        status_var.set(tr(
+            "Link Speed adicionado com sucesso ao Network.ini.",
+            "Link Speed successfully added to Network.ini."
+        ))
 
         verificar_status()
 
         messagebox.showinfo(
-            "Aviso",
-            "Link Speed configurado no bloco \"Network\".\n\n"
-            "O Rainmeter irá reiniciar para que a nova configuração tenha efeito."
+            tr("Aviso", "Notice"),
+            tr(
+                "Link Speed configurado no bloco \"Network\".\n\n"
+                "O Rainmeter irá reiniciar para que a nova configuração tenha efeito.",
+                "Link Speed configured in the \"Network\" block.\n\n"
+                "Rainmeter will restart for the new configuration to take effect."
+            )
         )
 
     def atualizar():
@@ -2080,26 +1967,24 @@ def montar_subaba_network(parent):
     buttons = ttk.Frame(parent, padding=10)
     buttons.pack(fill="x", side="bottom")
 
-    botao_atualizar = ttk.Button(buttons, text="Atualizar", command=atualizar)
+    botao_atualizar = ttk.Button(buttons, text=tr("Atualizar", "Update"), command=atualizar)
     botao_atualizar.pack(side="right")
 
-    botao_adicionar = ttk.Button(buttons, text="Adicionar", command=adicionar_link_speed)
+    botao_adicionar = ttk.Button(buttons, text=tr("Adicionar", "Add"), command=adicionar_link_speed)
     botao_adicionar.pack(side="right", padx=5)
 
     verificar_status()
     ATUALIZADORES_UI.append(verificar_status)
 
 
-# ------------------------------------------------------------
-# SUB-ABA - SYSTEM.INI
-# ------------------------------------------------------------
-
 def montar_subaba_system(parent):
-
     criar_cabecalho_subaba(
         parent,
         "System Update",
-        "Aplica uma configuração atualizada ao bloco \"System\" já existente no Rainmeter."
+        tr(
+            "Aplica uma configuração atualizada ao bloco \"System\" já existente no Rainmeter.",
+            "Applies an updated configuration to the existing Rainmeter \"System\" block."
+        )
     )
 
     form_sistema = ttk.Frame(parent, padding=(10, 4))
@@ -2123,19 +2008,17 @@ def montar_subaba_system(parent):
     botoes_lhm = ttk.Frame(quadro_lhm)
     botoes_lhm.pack(fill="x")
 
-    botao_instalar_lhm = ttk.Button(botoes_lhm, text="Instalar")
+    botao_instalar_lhm = ttk.Button(botoes_lhm, text=tr("Instalar", "Install"))
     botao_instalar_lhm.pack(side="left")
 
-    botao_abrir_lhm = ttk.Button(botoes_lhm, text="Ativar")
+    botao_abrir_lhm = ttk.Button(botoes_lhm, text=tr("Ativar", "Enable"))
     botao_abrir_lhm.pack(side="left", padx=5)
-
 
     status_sistema_var = tk.StringVar(value="")
     status_sistema_label = ttk.Label(form_sistema, textvariable=status_sistema_var, foreground="#0a7d2c")
     status_sistema_label.pack(anchor="w")
 
     def sistema_configurado():
-
         if not os.path.exists(SYSTEM_INI_PATH):
             return False
 
@@ -2148,52 +2031,72 @@ def montar_subaba_system(parent):
         return "measureGPUTemp" in conteudo
 
     def verificar_status_sistema():
-
         if os.path.exists(SYSTEM_INI_PATH):
             status_sistema_ini_label.configure(foreground="#0a7d2c")
-            status_sistema_ini_var.set("System.ini original encontrado.")
+            status_sistema_ini_var.set(tr("System.ini original encontrado.", "Original System.ini found."))
         else:
             status_sistema_ini_label.configure(foreground="#c0392b")
-            status_sistema_ini_var.set("System.ini original não encontrado.")
+            status_sistema_ini_var.set(tr(
+                "System.ini original não encontrado.",
+                "Original System.ini not found."
+            ))
 
         if sistema_configurado():
             status_sistema_config_label.configure(foreground="#0a7d2c")
-            status_sistema_config_var.set("A atualização já está configurada.")
+            status_sistema_config_var.set(tr(
+                "A atualização já está configurada.",
+                "The update is already configured."
+            ))
             botao_aplicar_sistema.state(["disabled"])
             botao_atualizar_sistema.state(["disabled"])
         else:
             status_sistema_config_label.configure(foreground="#b8860b")
-            status_sistema_config_var.set("O bloco ainda não está configurado.")
+            status_sistema_config_var.set(tr(
+                "O bloco ainda não está configurado.",
+                "The block is not configured yet."
+            ))
             botao_aplicar_sistema.state(["!disabled"])
             botao_atualizar_sistema.state(["!disabled"])
 
     def aplicar_system_ini():
-
         if not os.path.exists(SYSTEM_INI_PATH):
-
             messagebox.showwarning(
-                "Aviso",
-                "O System.ini original não foi encontrado.\n\n"
-                f"Esperado em:\n{SYSTEM_INI_PATH}\n\n"
-                "Instale/carregue o bloco \"System\" do Rainmeter antes de continuar."
+                tr("Aviso", "Notice"),
+                tr(
+                    "O System.ini original não foi encontrado.\n\n"
+                    f"Esperado em:\n{SYSTEM_INI_PATH}\n\n"
+                    "Instale/carregue o bloco \"System\" do Rainmeter antes de continuar.",
+                    "The original System.ini was not found.\n\n"
+                    f"Expected at:\n{SYSTEM_INI_PATH}\n\n"
+                    "Install/load the Rainmeter \"System\" block before continuing."
+                )
             )
             return
 
         if sistema_configurado():
-
             messagebox.showinfo(
-                "Aviso",
-                "O System.ini já está configurado. Nenhuma alteração foi necessária."
+                tr("Aviso", "Notice"),
+                tr(
+                    "O System.ini já está configurado. Nenhuma alteração foi necessária.",
+                    "System.ini is already configured. No changes were needed."
+                )
             )
             return
 
         prosseguir = messagebox.askyesno(
-            "Aplicar System.ini",
-            "Isso vai sobrescrever o System.ini atual pela versão configurada "
-            "(CPU, RAM, disponível em GB e temperaturas de CPU/GPU).\n\n"
-            "Para as temperaturas, o LibreHardwareMonitor precisa estar aberto "
-            "com o Remote Web Server ligado (porta 8085).\n\n"
-            "Deseja continuar?"
+            tr("Aplicar System.ini", "Apply System.ini"),
+            tr(
+                "Isso vai sobrescrever o System.ini atual pela versão configurada "
+                "(CPU, RAM, disponível em GB e temperaturas de CPU/GPU).\n\n"
+                "Para as temperaturas, o LibreHardwareMonitor precisa estar aberto "
+                "com o Remote Web Server ligado (porta 8085).\n\n"
+                "Deseja continuar?",
+                "This will overwrite the current System.ini with the configured version "
+                "(CPU, RAM, available GB and CPU/GPU temperatures).\n\n"
+                "For the temperatures, LibreHardwareMonitor must be open "
+                "with the Remote Web Server running (port 8085).\n\n"
+                "Do you want to continue?"
+            )
         )
 
         if not prosseguir:
@@ -2206,28 +2109,30 @@ def montar_subaba_system(parent):
                 f.write(SYSTEM_INI_TEMPLATE)
 
         except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao gravar o arquivo:\n{e}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao gravar o arquivo:\n{e}", f"Failed to write the file:\n{e}"))
             return
 
         status_sistema_label.configure(foreground="#0a7d2c")
-        status_sistema_var.set("Atualização configurada com sucesso.")
+        status_sistema_var.set(tr("Atualização configurada com sucesso.", "Update configured successfully."))
 
         verificar_status_sistema()
 
         messagebox.showinfo(
-            "Aviso",
-            "Bloco \"System\" configurado.\n\n"
-            "O Rainmeter irá reiniciar o bloco para que a "
-            "nova configuração tenha efeito."
+            tr("Aviso", "Notice"),
+            tr(
+                "Bloco \"System\" configurado.\n\n"
+                "O Rainmeter irá reiniciar o bloco para que a "
+                "nova configuração tenha efeito.",
+                "\"System\" block configured.\n\n"
+                "Rainmeter will restart the block for the "
+                "new configuration to take effect."
+            )
         )
 
         ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label)
 
     def atualizar_sistema():
         ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label)
-
-
-    # ---- LibreHardwareMonitor ----
 
     estado_lhm = {
         "ocupado": False,
@@ -2239,7 +2144,6 @@ def montar_subaba_system(parent):
     }
 
     def coletar_lhm():
-        # roda em thread: nada de tkinter aqui
         try:
             exe = localizar_lhm()
             rodando = lhm_esta_rodando() if exe else False
@@ -2253,10 +2157,12 @@ def montar_subaba_system(parent):
             estado_lhm["pronto"] = True
 
     def renderizar_lhm(exe, rodando, ativo):
-
         if not exe:
             status_lhm_label.configure(foreground="#c0392b")
-            status_lhm_var.set("Não instalado. Clique em Instalar (usa o winget e pede permissão de administrador).")
+            status_lhm_var.set(tr(
+                "Não instalado. Clique em Instalar (usa o winget e pede permissão de administrador).",
+                "Not installed. Click Install (uses winget and asks for administrator permission)."
+            ))
             botao_instalar_lhm.state(["!disabled"])
             botao_abrir_lhm.state(["disabled"])
             return
@@ -2265,23 +2171,31 @@ def montar_subaba_system(parent):
 
         if ativo:
             status_lhm_label.configure(foreground="#0a7d2c")
-            status_lhm_var.set("Instalado e com o servidor ativo na porta 8085.")
+            status_lhm_var.set(tr(
+                "Instalado e com o servidor ativo na porta 8085.",
+                "Installed and with the server active on port 8085."
+            ))
             botao_abrir_lhm.state(["disabled"])
 
         elif rodando:
             status_lhm_label.configure(foreground="#b8860b")
             status_lhm_var.set(
-                "Aberto, mas sem o servidor. Clique em Ativar para reiniciá-lo com o servidor ligado."
+                tr(
+                    "Aberto, mas sem o servidor. Clique em Ativar para reiniciá-lo com o servidor ligado.",
+                    "Open, but without the server. Click Enable to restart it with the server on."
+                )
             )
             botao_abrir_lhm.state(["!disabled"])
 
         else:
             status_lhm_label.configure(foreground="#b8860b")
-            status_lhm_var.set("Instalado, mas fechado. Clique em Ativar.")
+            status_lhm_var.set(tr(
+                "Instalado, mas fechado. Clique em Ativar.",
+                "Installed, but closed. Click Enable."
+            ))
             botao_abrir_lhm.state(["!disabled"])
 
     def tick_lhm():
-
         if estado_lhm["pronto"]:
             estado_lhm["pronto"] = False
             estado_lhm["ocupado"] = False
@@ -2314,7 +2228,6 @@ def montar_subaba_system(parent):
         estado_lhm["forcar"] = True
 
     def aplicar_system_e_recarregar():
-
         try:
             if not sistema_configurado():
                 os.makedirs(SYSTEM_SKIN_DIR, exist_ok=True)
@@ -2323,39 +2236,53 @@ def montar_subaba_system(parent):
                     f.write(SYSTEM_INI_TEMPLATE)
 
         except OSError as e:
-            messagebox.showerror("Erro", f"Falha ao gravar o System.ini:\n{e}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao gravar o System.ini:\n{e}", f"Failed to write System.ini:\n{e}"))
             return
 
         verificar_status_sistema()
 
         if ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini", status_sistema_var, status_sistema_label):
             status_sistema_label.configure(foreground="#0a7d2c")
-            status_sistema_var.set("System atualizado com medidores de temperatura.")
+            status_sistema_var.set(tr(
+                "System atualizado com medidores de temperatura.",
+                "System updated with temperature meters."
+            ))
 
     def instalar_lhm():
-
         if localizar_lhm():
             atualizar_status_lhm()
             return
 
         if not shutil.which("winget"):
             if messagebox.askyesno(
-                "winget não encontrado",
-                "Não encontrei o winget neste computador.\n\n"
-                "Deseja abrir a página de downloads do LibreHardwareMonitor "
-                "para instalar manualmente?"
+                tr("winget não encontrado", "winget not found"),
+                tr(
+                    "Não encontrei o winget neste computador.\n\n"
+                    "Deseja abrir a página de downloads do LibreHardwareMonitor "
+                    "para instalar manualmente?",
+                    "I could not find winget on this computer.\n\n"
+                    "Do you want to open the LibreHardwareMonitor downloads page "
+                    "to install it manually?"
+                )
             ):
                 webbrowser.open("https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases")
             return
 
         if not messagebox.askyesno(
-            "Instalar LibreHardwareMonitor",
-            "Vou instalar o LibreHardwareMonitor e o driver PawnIO (usado para ler os sensores) "
-            "pelo winget.\n\nO Windows vai pedir permissão de administrador. Deseja continuar?"
+            tr("Instalar LibreHardwareMonitor", "Install LibreHardwareMonitor"),
+            tr(
+                "Vou instalar o LibreHardwareMonitor e o driver PawnIO (usado para ler os sensores) "
+                "pelo winget.\n\nO Windows vai pedir permissão de administrador. Deseja continuar?",
+                "I will install LibreHardwareMonitor and the PawnIO driver (used to read the sensors) "
+                "through winget.\n\nWindows will ask for administrator permission. Do you want to continue?"
+            )
         ):
             return
 
-        iniciar_operacao_lhm("Instalando... aguarde (pode demorar um minuto).")
+        iniciar_operacao_lhm(tr(
+            "Instalando... aguarde (pode demorar um minuto).",
+            "Installing... please wait (it may take a minute)."
+        ))
 
         resultado = {}
 
@@ -2378,7 +2305,6 @@ def montar_subaba_system(parent):
         thread.start()
 
         def aguardar():
-
             if thread.is_alive():
                 root.after(500, aguardar)
                 return
@@ -2386,23 +2312,27 @@ def montar_subaba_system(parent):
             encerrar_operacao_lhm()
 
             if "erro" in resultado:
-                messagebox.showerror("Erro", f"Falha ao executar o winget:\n{resultado['erro']}")
+                messagebox.showerror(tr("Erro", "Error"), tr(f"Falha ao executar o winget:\n{resultado['erro']}", f"Failed to run winget:\n{resultado['erro']}"))
 
             elif not localizar_lhm():
                 messagebox.showerror(
-                    "Erro",
-                    "A instalação não foi concluída (código "
-                    f"{resultado.get('codigo')}).\n\n"
-                    "Se você recusou a permissão de administrador, tente novamente."
+                    tr("Erro", "Error"),
+                    tr(
+                        "A instalação não foi concluída (código "
+                        f"{resultado.get('codigo')}).\n\n"
+                        "Se você recusou a permissão de administrador, tente novamente.",
+                        "The installation was not completed (code "
+                        f"{resultado.get('codigo')}).\n\n"
+                        "If you declined the administrator permission, try again."
+                    )
                 )
 
             else:
-                messagebox.showinfo("Aviso", "LibreHardwareMonitor instalado.\n\nAgora clique em Ativar.")
+                messagebox.showinfo(tr("Aviso", "Notice"), tr("LibreHardwareMonitor instalado.\n\nAgora clique em Ativar.", "LibreHardwareMonitor installed.\n\nNow click Enable."))
 
         root.after(500, aguardar)
 
     def ativar_lhm():
-
         exe = localizar_lhm()
 
         if not exe:
@@ -2414,14 +2344,19 @@ def montar_subaba_system(parent):
 
         if rodando:
             if not messagebox.askyesno(
-                "Ativar servidor",
-                "O LibreHardwareMonitor está aberto, mas sem o servidor.\n\n"
-                "Vou fechá-lo e abri-lo novamente com o servidor ligado "
-                "(o Windows pode pedir permissão de administrador). Deseja continuar?"
+                tr("Ativar servidor", "Enable server"),
+                tr(
+                    "O LibreHardwareMonitor está aberto, mas sem o servidor.\n\n"
+                    "Vou fechá-lo e abri-lo novamente com o servidor ligado "
+                    "(o Windows pode pedir permissão de administrador). Deseja continuar?",
+                    "LibreHardwareMonitor is open, but without the server.\n\n"
+                    "I will close it and open it again with the server enabled "
+                    "(Windows may ask for administrator permission). Do you want to continue?"
+                )
             ):
                 return
 
-        iniciar_operacao_lhm("Ativando o servidor... aguarde.")
+        iniciar_operacao_lhm(tr("Ativando o servidor... aguarde.", "Enabling the server... please wait."))
 
         resultado = {}
 
@@ -2438,9 +2373,11 @@ def montar_subaba_system(parent):
                         time.sleep(0.5)
 
                     if lhm_esta_rodando():
-                        resultado["erro"] = (
+                        resultado["erro"] = tr(
                             "Não consegui fechar o LibreHardwareMonitor. "
-                            "Feche-o manualmente e tente novamente."
+                            "Feche-o manualmente e tente novamente.",
+                            "I could not close LibreHardwareMonitor. "
+                            "Close it manually and try again."
                         )
                         return
 
@@ -2452,7 +2389,10 @@ def montar_subaba_system(parent):
                     resultado["aviso_config"] = str(e)
 
                 if not abrir_lhm_como_admin(exe):
-                    resultado["erro"] = "Não foi possível abrir o LibreHardwareMonitor como administrador."
+                    resultado["erro"] = tr(
+                        "Não foi possível abrir o LibreHardwareMonitor como administrador.",
+                        "Could not open LibreHardwareMonitor as administrator."
+                    )
                     return
 
                 for _ in range(60):
@@ -2468,7 +2408,6 @@ def montar_subaba_system(parent):
         thread.start()
 
         def aguardar():
-
             if thread.is_alive():
                 root.after(500, aguardar)
                 return
@@ -2476,16 +2415,20 @@ def montar_subaba_system(parent):
             encerrar_operacao_lhm()
 
             if "erro" in resultado:
-                messagebox.showerror("Erro", resultado["erro"])
+                messagebox.showerror(tr("Erro", "Error"), resultado["erro"])
 
             elif resultado.get("ok"):
                 aplicar_system_e_recarregar()
 
             else:
                 messagebox.showinfo(
-                    "Aviso",
-                    "O LibreHardwareMonitor foi aberto, mas o servidor não respondeu.\n\n"
-                    "No programa, vá em Options > Remote Web Server > Run."
+                    tr("Aviso", "Notice"),
+                    tr(
+                        "O LibreHardwareMonitor foi aberto, mas o servidor não respondeu.\n\n"
+                        "No programa, vá em Options > Remote Web Server > Run.",
+                        "LibreHardwareMonitor was opened, but the server did not respond.\n\n"
+                        "In the program, go to Options > Remote Web Server > Run."
+                    )
                 )
 
         root.after(500, aguardar)
@@ -2496,10 +2439,16 @@ def montar_subaba_system(parent):
     buttons_sistema = ttk.Frame(parent, padding=(10, 4))
     buttons_sistema.pack(fill="x", side="bottom")
 
-    botao_atualizar_sistema = ttk.Button(buttons_sistema, text="Atualizar", command=atualizar_sistema)
+    botao_atualizar_sistema = ttk.Button(buttons_sistema, text=tr(
+        "Atualizar",
+        "Update"
+    ), command=atualizar_sistema)
     botao_atualizar_sistema.pack(side="right")
 
-    botao_aplicar_sistema = ttk.Button(buttons_sistema, text="Adicionar", command=aplicar_system_ini)
+    botao_aplicar_sistema = ttk.Button(buttons_sistema, text=tr(
+        "Adicionar",
+        "Add"
+    ), command=aplicar_system_ini)
     botao_aplicar_sistema.pack(side="right", padx=5)
 
     verificar_status_sistema()
@@ -2507,22 +2456,13 @@ def montar_subaba_system(parent):
     tick_lhm()
 
 
-
-# ==========================================
-# RESET - RECRIA AS SKINS NO MODELO DA VERSÃO ATUAL
-# ==========================================
-
 def backup_arquivo(caminho):
-
     if os.path.exists(caminho):
         carimbo = time.strftime("%Y%m%d-%H%M%S")
         shutil.copy2(caminho, f"{caminho}.{carimbo}.bak")
 
 
 def fechar_rainmeter_e_scripts():
-    """Fecha o Rainmeter e os scripts PowerShell que as skins deixam rodando
-    em segundo plano (senão eles seguram os arquivos e o mutex)."""
-
     flags = 0x08000000
 
     subprocess.run(["taskkill", "/F", "/IM", "Rainmeter.exe"], capture_output=True, creationflags=flags)
@@ -2551,7 +2491,6 @@ def fechar_rainmeter_e_scripts():
 
 
 def remover_com_backup(caminho):
-
     if not os.path.exists(caminho):
         return
 
@@ -2560,20 +2499,29 @@ def remover_com_backup(caminho):
 
 
 def resetar_tudo():
-
     exe_devices = os.path.join(os.getcwd(), EXE_NAME)
     regenera_devices = os.path.exists(INI_FILE) and os.path.exists(exe_devices)
 
     if not messagebox.askyesno(
         "Reset",
-        "Isso vai FECHAR o Rainmeter, apagar as configurações antigas e recriá-las "
-        "no modelo desta versão do app:\n\n"
-        "  - System (CPU, RAM e Temperaturas)\n"
-        "  - Network (com Link Speed)\n"
-        "  - Status de Dispositivos\n\n"
-        "Os dispositivos de rede cadastrados serão mantidos.\n"
-        "Os arquivos atuais ganham uma cópia .bak antes de serem substituídos.\n\n"
-        "Deseja continuar?"
+        tr(
+            "Isso vai FECHAR o Rainmeter, apagar as configurações antigas e recriá-las "
+            "no modelo desta versão do app:\n\n"
+            "  - System (CPU, RAM e Temperaturas)\n"
+            "  - Network (com Link Speed)\n"
+            "  - Status de Dispositivos\n\n"
+            "Os dispositivos de rede cadastrados serão mantidos.\n"
+            "Os arquivos atuais ganham uma cópia .bak antes de serem substituídos.\n\n"
+            "Deseja continuar?",
+            "This will CLOSE Rainmeter, delete the old settings and recreate them "
+            "using this version of the app:\n\n"
+            "  - System (CPU, RAM and Temperatures)\n"
+            "  - Network (with Link Speed)\n"
+            "  - Devices Status\n\n"
+            "The registered network devices will be kept.\n"
+            "The current files get a .bak copy before being replaced.\n\n"
+            "Do you want to continue?"
+        )
     ):
         return
 
@@ -2581,14 +2529,15 @@ def resetar_tudo():
     resultado = {"avisos": []}
 
     def trabalho():
-
         try:
             fechar_rainmeter_e_scripts()
 
             if rainmeter_esta_rodando():
-                resultado["erro"] = (
+                resultado["erro"] = tr(
                     "Não consegui fechar o Rainmeter. Feche-o manualmente "
-                    "(ou rode este app como administrador) e tente novamente."
+                    "(ou rode este app como administrador) e tente novamente.",
+                    "I could not close Rainmeter. Close it manually "
+                    "(or run this app as administrator) and try again."
                 )
                 return
 
@@ -2623,18 +2572,23 @@ def resetar_tudo():
                 subprocess.run([exe_devices], timeout=90, creationflags=0x08000000)
 
             except (OSError, subprocess.TimeoutExpired) as e:
-                resultado["avisos"].append(f"Não consegui regenerar os Dispositivos: {e}")
+                resultado["avisos"].append(tr(
+                    f"Não consegui regenerar os Dispositivos: {e}",
+                    f"Could not regenerate the Devices: {e}"
+                ))
 
         else:
             resultado["avisos"].append(
-                "Dispositivos: não regenerado (SideMeterDevices.exe ou devices.ini não encontrado)."
+                tr(
+                    "Dispositivos: não regenerado (SideMeterDevices.exe ou devices.ini não encontrado).",
+                    "Devices: not regenerated (SideMeterDevices.exe or devices.ini not found)."
+                )
             )
 
     thread = threading.Thread(target=trabalho, daemon=True)
     thread.start()
 
     def aguardar():
-
         if thread.is_alive():
             root.after(500, aguardar)
             return
@@ -2642,7 +2596,7 @@ def resetar_tudo():
         botao_reset.state(["!disabled"])
 
         if "erro" in resultado:
-            messagebox.showerror("Erro", f"Falha no reset:\n{resultado['erro']}")
+            messagebox.showerror(tr("Erro", "Error"), tr(f"Falha no reset:\n{resultado['erro']}", f"Reset failed:\n{resultado['erro']}"))
             return
 
         for atualizador in ATUALIZADORES_UI:
@@ -2651,7 +2605,10 @@ def resetar_tudo():
         ativar_skin_rainmeter(SYSTEM_SKIN_NAME, "System.ini")
         ativar_skin_rainmeter(NETWORK_SKIN_NAME, "Network.ini")
 
-        mensagem = "As configurações foram recriadas e recarregadas."
+        mensagem = tr(
+            "As configurações foram recriadas e recarregadas.",
+            "The settings were recreated and reloaded."
+        )
 
         if resultado["avisos"]:
             mensagem += "\n\n" + "\n".join(resultado["avisos"])
@@ -2665,8 +2622,5 @@ montar_aba_sidemeterdevices(aba_sidemeterdevices)
 montar_aba_apimonitor(aba_apimonitor)
 montar_aba_rainmeter(aba_rainmeter)
 
-# ==========================================
-# START
-# ==========================================
 
 root.mainloop()
