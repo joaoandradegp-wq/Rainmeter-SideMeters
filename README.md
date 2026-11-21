@@ -8,10 +8,10 @@ Coleção de widgets e automações para Rainmeter, com foco em monitoramento de
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Expansão-brightgreen">
-  <img src="https://img.shields.io/badge/Versão-1.5-blue">
+  <img src="https://img.shields.io/badge/Versão-1.6-blue">
   <img src="https://img.shields.io/badge/Linguagem-Python-blue">
   <img src="https://img.shields.io/badge/Integração-Rainmeter-lightgrey">
-  <img src="https://img.shields.io/badge/Language-PT--BR-orange">
+  <img src="https://img.shields.io/badge/Language-PT--BR%20%7C%20EN-orange">
 </p>
 
 ---
@@ -30,7 +30,19 @@ A aplicação permite configurar dispositivos, monitorar servidores e rede, atua
 * **CRT Terminal** - Monitoramento de servidores através de API;
 * **Link Speed** - Monitoramento da velocidade do link;
 * **System CPU/RAM** - Monitoramento de CPU e memória;
-* **LibreHardwareMonitor** - Instalação, ativação e monitoramento de temperaturas de CPU e GPU.
+* **LibreHardwareMonitor** - Instalação, ativação e monitoramento de temperaturas de CPU e GPU;
+* **Redefinir Tudo** - Recria as skins no modelo da versão atual, mantendo os dispositivos cadastrados.
+
+---
+
+## 🌐 Idiomas
+
+O Side Meters Suite detecta automaticamente o idioma do Windows:
+
+* **Português (Brasil)** - quando o Windows está em PT-BR;
+* **Inglês** - para qualquer outro idioma.
+
+A tradução vale para a interface, as mensagens, os diálogos e o programa **SideMeterDevices**.
 
 ---
 
@@ -41,6 +53,8 @@ A aplicação permite configurar dispositivos, monitorar servidores e rede, atua
 * Cadastro, edição e remoção de dispositivos
 * Suporte a IP, Hostname e DDNS
 * Geração automática do `devices.ini`
+* Verificação contínua em segundo plano (ping, ou porta quando informada como `host:porta`)
+* Indicação **ONLINE** / **OFFLINE** no Rainmeter
 
 ### CRT Terminal
 
@@ -54,6 +68,7 @@ A aplicação permite configurar dispositivos, monitorar servidores e rede, atua
 * Identificação automática da interface de rede
 * Prioridade para Ethernet
 * Fallback para Wi-Fi
+* Filtragem de interfaces virtuais, VPN e Hyper-V
 * Monitoramento de velocidade, download e upload
 
 ### System
@@ -73,6 +88,12 @@ A aplicação permite configurar dispositivos, monitorar servidores e rede, atua
 * Inicialização automática com privilégios administrativos
 * Verificação do status do servidor
 * Integração com a skin `System`
+
+### Redefinir Tudo
+
+* Fecha o Rainmeter e recria as skins System, Network e Status de Dispositivos
+* Mantém os dispositivos cadastrados
+* Gera cópia `.bak` dos arquivos substituídos
 
 ---
 
@@ -111,7 +132,7 @@ Options > Remote Web Server > Run
 2. Execute o **Side Meters Suite**.
 3. Selecione o módulo desejado.
 4. Configure os parâmetros.
-5. Clique em **Adicionar**, **Atualizar** ou **Testar Conexão**, conforme o módulo.
+5. Clique em **Adicionar** / **Add**, **Atualizar** / **Update** ou **Testar Conexão** / **Test Connection**, conforme o módulo.
 6. O programa gera ou atualiza os arquivos necessários e ativa a skin correspondente.
 
 Para o monitoramento de temperatura:
@@ -122,7 +143,7 @@ Rainmeter
        └── LibreHardwareMonitor
            ├── Instalar
            ├── Ativar
-           └── Verificar
+           └── Status (atualizado automaticamente)
 ```
 
 ---
@@ -132,11 +153,19 @@ Rainmeter
 ```text
 Documents/
 └── Rainmeter/
+    ├── network_status.txt
     ├── Scripts/
-    │   └── devices.ini
+    │   ├── devices.ini
+    │   ├── check_network.ps1
+    │   ├── check_network.bat
+    │   ├── start_hidden.vbs
+    │   └── network.lua
     │
     └── Skins/
         ├── illustro/
+        │   ├── NetworkDevices/
+        │   │   └── SideMeterDevices.ini
+        │   │
         │   ├── Network/
         │   │   ├── Network.ini
         │   │   ├── LinkSpeed.ps1
@@ -164,6 +193,7 @@ Documents/
 * Rainmeter
 * PowerShell
 * VBScript
+* Lua
 * WinGet
 * LibreHardwareMonitor
 * PawnIO
